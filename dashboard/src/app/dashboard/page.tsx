@@ -148,6 +148,7 @@ export default function OverviewPage() {
                   fontSize: '0.75rem',
                   color: 'var(--text-primary)',
                 }}
+                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
               />
               <Area type="monotone" dataKey="leads" stroke="var(--accent-primary)" fill="url(#leadGradient)" strokeWidth={2} />
             </AreaChart>
@@ -188,6 +189,7 @@ export default function OverviewPage() {
                     fontSize: '0.75rem',
                     color: 'var(--text-primary)',
                   }}
+                  cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -231,6 +233,7 @@ export default function OverviewPage() {
                   fontSize: '0.75rem',
                   color: 'var(--text-primary)',
                 }}
+                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
               />
               <Bar dataKey="leads" fill="var(--accent-primary)" radius={[6, 6, 0, 0]} />
             </BarChart>
@@ -260,6 +263,7 @@ export default function OverviewPage() {
                   fontSize: '0.75rem',
                   color: 'var(--text-primary)',
                 }}
+                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
               />
               <Bar dataKey="value" fill="var(--accent-purple)" radius={[0, 6, 6, 0]} />
             </BarChart>

@@ -178,7 +178,7 @@ export default function InsightsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
               <XAxis dataKey="week" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
               <Area type="monotone" dataKey="leads" stroke="var(--accent-primary)" fill="url(#insightGrad)" strokeWidth={2} name="Leads" />
               <Area type="monotone" dataKey="contacted" stroke="var(--accent-green)" fill="none" strokeWidth={2} strokeDasharray="5 5" name="Contacted" />
             </AreaChart>
@@ -194,7 +194,7 @@ export default function InsightsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
               <XAxis dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {Object.keys(stats.scoreBuckets).map((_, i) => (
                   <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -255,7 +255,7 @@ export default function InsightsPage() {
                     <Cell key={i} fill={['var(--accent-green)', 'var(--accent-amber)', 'var(--accent-red)', 'var(--text-muted)'][i]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex-1 space-y-2">
