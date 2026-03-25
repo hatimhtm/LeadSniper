@@ -383,46 +383,54 @@ export default function LeadDetail({ lead, onUpdate }: LeadDetailProps) {
               <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>This business has no web presence — strong pitch opportunity.</p>
             </div>
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-3 gap-3">
-              <ScoreGauge score={lead.page_speed_score} label="Speed" highIsGood={false} />
-              <div className="flex flex-col items-center gap-1">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                  style={{ background: 'var(--bg-input)' }}>
-                  <Smartphone size={20} style={{
-                    color: lead.mobile_friendly === null ? 'var(--text-muted)' : lead.mobile_friendly ? 'var(--accent-green)' : 'var(--accent-red)',
-                  }} />
-                </div>
-                <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                  {lead.mobile_friendly === null ? 'Mobile' : lead.mobile_friendly ? 'Responsive' : 'Not Mobile'}
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                  style={{ background: 'var(--bg-input)' }}>
-                  <Smartphone size={20} style={{
-                    color: lead.has_mobile_app ? 'var(--accent-green)' : 'var(--accent-red)',
-                  }} />
-                </div>
-                <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                  {lead.has_mobile_app ? 'Has App' : 'No App'}
-                </span>
-              </div>
+        ) : lead.page_speed_score === null && lead.mobile_friendly === null ? (
+          <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: 'var(--bg-input)' }}>
+            <Gauge size={18} style={{ color: 'var(--text-muted)' }} />
+            <div>
+              <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Not analyzed yet</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                Speed and mobile data will appear once PageSpeed analysis completes.
+              </p>
             </div>
-
-            {lead.tech_stack.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                <Code2 size={13} style={{ color: 'var(--text-muted)' }} />
-                {lead.tech_stack.map((tech, i) => (
-                  <span key={i} className="text-[10px] font-medium px-2 py-0.5 rounded-md"
-                    style={{ background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}>
-                    {tech}
-                  </span>
-                ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            <ScoreGauge score={lead.page_speed_score} label="Speed" highIsGood={false} />
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                style={{ background: 'var(--bg-input)' }}>
+                <Smartphone size={20} style={{
+                  color: lead.mobile_friendly === null ? 'var(--text-muted)' : lead.mobile_friendly ? 'var(--accent-green)' : 'var(--accent-red)',
+                }} />
               </div>
-            )}
-          </>
+              <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                {lead.mobile_friendly === null ? 'Mobile' : lead.mobile_friendly ? 'Responsive' : 'Not Mobile'}
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                style={{ background: 'var(--bg-input)' }}>
+                <Smartphone size={20} style={{
+                  color: lead.has_mobile_app ? 'var(--accent-green)' : 'var(--accent-red)',
+                }} />
+              </div>
+              <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                {lead.has_mobile_app ? 'Has App' : 'No App'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {lead.tech_stack.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            <Code2 size={13} style={{ color: 'var(--text-muted)' }} />
+            {lead.tech_stack.map((tech, i) => (
+              <span key={i} className="text-[10px] font-medium px-2 py-0.5 rounded-md"
+                style={{ background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}>
+                {tech}
+              </span>
+            ))}
+          </div>
         )}
       </div>
 
