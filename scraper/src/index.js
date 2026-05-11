@@ -168,8 +168,17 @@ async function runWatchMode(intervalSec) {
         console.log(chalk.gray('\n  Waiting for next request...\n'));
       }
     } catch (err) {
-      // Silently retry on network errors
-      if (!err.message.includes('fetch')) {
+      // Silently retry on network errors. `fetch` substring check was
+      // fragile — broaden to common transient classes so we don't spam
+      // the log on every dropped Wi-Fi packet.
+      const transient =
+        err instanceof TypeError ||
+        err.name === 'AbortError' ||
+        err.name === 'FetchError' ||
+        err.code === 'ECONNRESET' ||
+        err.code === 'ETIMEDOUT' ||
+        err.code === 'ENOTFOUND';
+      if (!transient) {
         console.log(chalk.gray(`  Poll error: ${err.message}`));
       }
     }

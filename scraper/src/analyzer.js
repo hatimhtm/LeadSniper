@@ -42,6 +42,11 @@ export async function analyzeWebsite(url) {
     apiUrl.searchParams.append('category', 'best-practices');
 
     const response = await fetch(apiUrl.toString(), { signal: AbortSignal.timeout(45000) });
+    if (!response.ok) {
+      // Bail before JSON parse — PageSpeed returns HTML error pages on
+      // 4xx/5xx and `response.json()` would throw a confusing SyntaxError.
+      throw new Error(`PageSpeed API HTTP ${response.status}`);
+    }
     const data = await response.json();
 
     if (data.lighthouseResult) {

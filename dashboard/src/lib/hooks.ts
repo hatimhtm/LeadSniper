@@ -20,7 +20,11 @@ export function useLeads(filters?: { status?: LeadStatus; searchId?: string }) {
     if (filters?.searchId) query = query.eq('search_id', filters.searchId);
 
     const { data, error } = await query;
-    if (!error && data) setLeads(data as Lead[]);
+    if (error) {
+      console.error('[useLeads] supabase error:', error);
+    } else if (data) {
+      setLeads(data as Lead[]);
+    }
     setLoading(false);
   }, [filters?.status, filters?.searchId]);
 
@@ -82,7 +86,11 @@ export function useSearches() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error && data) setSearches(data as Search[]);
+    if (error) {
+      console.error('[useSearches] supabase error:', error);
+    } else if (data) {
+      setSearches(data as Search[]);
+    }
     setLoading(false);
   }, []);
 
@@ -120,7 +128,11 @@ export function useSearchRequests() {
       .order('created_at', { ascending: false })
       .limit(20);
 
-    if (!error && data) setRequests(data as SearchRequest[]);
+    if (error) {
+      console.error('[useSearchRequests] supabase error:', error);
+    } else if (data) {
+      setRequests(data as SearchRequest[]);
+    }
     setLoading(false);
   }, []);
 

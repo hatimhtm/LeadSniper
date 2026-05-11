@@ -67,7 +67,7 @@ export default function LeadCard({ lead, onClick, isDragging }: LeadCardProps) {
           <a
             href={getEmailLink(primaryEmail, '', lead.ai_email_draft || '')}
             onClick={(e) => e.stopPropagation()}
-            className="p-1.5 rounded-lg transition-colors hover:scale-110"
+            className="p-1.5 rounded-lg transition-colors hover:opacity-70"
             style={{ color: 'var(--accent-blue)' }}
             title={`Email: ${primaryEmail}`}
           >
@@ -80,7 +80,7 @@ export default function LeadCard({ lead, onClick, isDragging }: LeadCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="p-1.5 rounded-lg transition-colors hover:scale-110"
+            className="p-1.5 rounded-lg transition-colors hover:opacity-70"
             style={{ color: 'var(--accent-green)' }}
             title={`WhatsApp: ${lead.phone}`}
           >
@@ -91,7 +91,7 @@ export default function LeadCard({ lead, onClick, isDragging }: LeadCardProps) {
           <a
             href={`tel:${lead.phone}`}
             onClick={(e) => e.stopPropagation()}
-            className="p-1.5 rounded-lg transition-colors hover:scale-110"
+            className="p-1.5 rounded-lg transition-colors hover:opacity-70"
             style={{ color: 'var(--accent-amber)' }}
             title={`Call: ${lead.phone}`}
           >
@@ -104,7 +104,7 @@ export default function LeadCard({ lead, onClick, isDragging }: LeadCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="p-1.5 rounded-lg transition-colors hover:scale-110"
+            className="p-1.5 rounded-lg transition-colors hover:opacity-70"
             style={{ color: 'var(--text-secondary)' }}
             title="Visit website"
           >
@@ -117,7 +117,7 @@ export default function LeadCard({ lead, onClick, isDragging }: LeadCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="p-1.5 rounded-lg transition-colors hover:scale-110 ml-auto"
+            className="p-1.5 rounded-lg transition-colors hover:opacity-70 ml-auto"
             style={{ color: 'var(--text-muted)' }}
             title="View on Google Maps"
           >

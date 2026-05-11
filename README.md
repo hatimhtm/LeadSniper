@@ -1,347 +1,232 @@
-<div align="center">
-  <h1>LeadSniper</h1>
-  <p><strong>AI-Powered Lead Generation & Outreach Engine for Freelancers</strong></p>
-  <p>Find businesses, analyze their digital weaknesses, score opportunities, and generate hyper-personalized outreach — all automated.</p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets-readme/hero-banner-dark.svg" />
+    <img src="assets-readme/hero-banner.svg" alt="LeadSniper" width="100%" />
+  </picture>
+</p>
 
-  <p>
-    <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=nextdotjs" alt="Next.js" />
-    <img src="https://img.shields.io/badge/TypeScript-5.7-blue?style=flat-square&logo=typescript" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat-square&logo=supabase" alt="Supabase" />
-    <img src="https://img.shields.io/badge/Playwright-Headless-2EAD33?style=flat-square&logo=playwright" alt="Playwright" />
-    <img src="https://img.shields.io/badge/Gemini_2.5-AI_Drafts-4285F4?style=flat-square&logo=google" alt="Gemini" />
-    <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
-  </p>
+<p align="center">
+  <a href="https://github.com/hatimhtm/LeadSniper/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/hatimhtm/LeadSniper/ci.yml?branch=main&style=for-the-badge&label=CI&labelColor=1A1A1A&color=CCFF00" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/Next.js-14-1A1A1A?style=for-the-badge&logo=nextdotjs&logoColor=CCFF00" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5-1A1A1A?style=for-the-badge&logo=typescript&logoColor=CCFF00" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Supabase-1A1A1A?style=for-the-badge&logo=supabase&logoColor=CCFF00" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Playwright-1A1A1A?style=for-the-badge&logo=playwright&logoColor=CCFF00" alt="Playwright" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-MIT-1A1A1A?style=for-the-badge&labelColor=1A1A1A&color=CCFF00" alt="MIT" /></a>
+</p>
 
-  <p>
-    <a href="#-features">Features</a> &bull;
-    <a href="#-architecture">Architecture</a> &bull;
-    <a href="#-quick-start">Quick Start</a> &bull;
-    <a href="#-deployment">Deployment</a> &bull;
-    <a href="#-project-structure">Project Structure</a>
-  </p>
-</div>
+<p align="center">
+  <em><strong>An AI lead-generation engine for freelancers.</strong> Hand it a niche + a city; it queries Google Places, crawls each lead's website with Playwright, scores them across 23 factors, drafts personalised outreach with Gemini, and streams everything into a Next.js dashboard backed by Supabase real-time. ~7k LOC across a CLI scraper + dashboard. Built for the freelance prospecting workflow I wished existed.</em>
+</p>
 
 ---
 
-## What is LeadSniper?
-
-LeadSniper is a full-stack B2B prospecting tool built for freelance developers and digital agencies. It automates the entire lead generation pipeline:
-
-1. **Discover** businesses via Google Places API across any niche and city
-2. **Crawl** their websites with Playwright to extract emails, social links, tech stacks, and app store presence
-3. **Analyze** their digital presence using Google PageSpeed Insights (Core Web Vitals, SEO, accessibility)
-4. **Score** each lead across 23 factors to surface the best opportunities (0-100)
-5. **Draft** personalized cold emails, WhatsApp messages, and LinkedIn DMs using Gemini 2.5 AI
-6. **Manage** your entire sales pipeline through a premium real-time dashboard
-
-The scraper runs **locally on your machine** (free, no serverless costs), while the dashboard deploys to **Vercel** (free tier) with **Supabase** (free tier) as the database. Total cost: **$0**.
-
----
-
-## Features
-
-### Scraper Engine
-
-- **Google Places Search** — Discover businesses by niche + city, with automatic pagination for large result sets
-- **Playwright Deep Crawl** — Headless browser visits homepages + contact/about pages to extract emails, social links, tech stack indicators, and mobile app links
-- **PageSpeed Insights Analysis** — Extracts 17+ metrics per site: FCP, LCP, CLS, TTI, viewport, meta tags, structured data, image optimization, PWA support
-- **23-Factor Opportunity Scoring** — Niche-aware scoring system (0-100) that considers website quality, speed, mobile-friendliness, SEO, social presence, business health, and more
-- **AI Message Drafting** — Generates channel-appropriate outreach (Email, WhatsApp, LinkedIn) with tone modifiers and service-type targeting
-- **Watch Mode** — Idles locally with minimal RAM, auto-processes search requests queued from the dashboard
-- **Duplicate Detection** — Skips businesses already in your database via `google_place_id` matching
-- **macOS Launcher** — Double-click `LeadSniper.command` to start watch mode instantly
-
-### Dashboard
-
-- **Premium UI** — Dark-themed, glass-morphism design with Framer Motion animations throughout
-- **8 Themes** — Midnight, Obsidian, Sapphire, Jade, Ember, Cream (light), Aurora, Rose — all with live preview
-- **Collapsible Sidebar** — Responsive layout for split-screen and smaller displays
-- **Real-time Updates** — Supabase Realtime subscriptions keep every page in sync
-- **Kanban Pipeline** — Drag-and-drop board with 7 status columns including Follow Up
-- **Lead Detail Panel** — Score diagnostic (all 23 factors visualized), AI message regeneration with custom prompts/tones/service targeting, contact history log
-- **Bulk Actions** — Select multiple leads and change status in one click
-- **Snipe Page** — Search from the dashboard UI, save search presets, track request status in real-time
-- **Insights Page** — Stats cards (today/week/month/all-time), trend charts, score distribution, niche performance, speed breakdown
-- **Follow-up System** — Auto-moves contacted leads to "Follow Up" after configurable days, with snooze buttons (3d/7d/14d)
-- **Hover Preview** — Animated card appears on lead hover showing key metrics at a glance
-- **Contact Tracking** — Log which channel you used (email/WhatsApp/LinkedIn/phone) and the outcome per lead
-- **Settings UI** — Configure all API keys and personal info directly in the browser, stored securely in your Supabase instance
-
-### Opportunity Scoring (23 Factors)
-
-| Category | Factors | Max Points |
-|----------|---------|------------|
-| Website Quality | Existence, Desktop Speed, Mobile Speed, SSL, Responsive | 28 |
-| Core Web Vitals | FCP, LCP, CLS, TTI | 15 |
-| SEO & Content | Meta tags, OG tags, Structured Data, Image Optimization, Content Freshness | 16 |
-| Digital Gaps | No Mobile App, No Web App/Portal, No Online Booking, No PWA | 13 |
-| Business Signals | Rating + Reviews, Social Media Gaps, Contact Reachability, Tech Stack Age | 22 |
-| **Total** | **23 factors** | **~97** |
-
-Higher score = bigger opportunity. A lead with a 4.8-star rating, 200 reviews, and a broken WordPress site from 2019? That's a **jackpot**.
-
----
-
-## Architecture
+### `/// THE LOOP`
 
 ```
-┌────────────────────────────────┐         ┌──────────────────────┐
-│       Dashboard (Vercel)       │         │   Scraper (Local)    │
-│                                │         │                      │
-│  Next.js 14 App Router        │◄───────►│  Playwright Crawler  │
-│  Framer Motion UI             │   Real  │  PageSpeed Analyzer  │
-│  Recharts Analytics           │   time  │  Gemini AI Drafter   │
-│  @hello-pangea/dnd Kanban     │  Supa-  │  Opportunity Scorer  │
-│                                │  base   │  Commander CLI       │
-└────────────┬───────────────────┘         └──────────┬───────────┘
-             │                                        │
-             │         ┌──────────────────┐           │
-             └────────►│    Supabase      │◄──────────┘
-                       │                  │
-                       │  PostgreSQL DB   │
-                       │  Realtime Subs   │
-                       │  Row Level Sec   │
-                       └──────────────────┘
+            niche + city
+                 │
+                 ▼
+   ┌─────────────────────────────┐
+   │ Google Places (new API)     │  ──┐
+   │ → 60 raw candidates         │    │ failover between
+   └──────────────┬──────────────┘    │ 2 API keys
+                  │                   │
+                  ▼                   │
+   ┌─────────────────────────────┐    │
+   │ Playwright crawler          │    │
+   │ → homepage + about + contact│    │
+   │ resource-blocked, 2× retry  │    │
+   └──────────────┬──────────────┘    │
+                  │                   │
+                  ▼                   │
+   ┌─────────────────────────────┐    │
+   │ PageSpeed Insights API      │ ◀──┘
+   │ → perf · a11y · SEO · BP    │
+   └──────────────┬──────────────┘
+                  │
+                  ▼
+   ┌─────────────────────────────┐
+   │ 23-factor opportunity score │   no-website leads get
+   │ (web · seo · social · cwv)  │   max points on web factors
+   └──────────────┬──────────────┘   (they need the most help)
+                  │
+                  ▼
+   ┌─────────────────────────────┐
+   │ Gemini 2.5 Flash — drafts   │
+   │ per-channel (email · WA ·   │
+   │ DM) personalised outreach   │
+   └──────────────┬──────────────┘
+                  │ supabase realtime
+                  ▼
+   ┌─────────────────────────────┐
+   │ Next.js dashboard           │
+   │ Kanban · KPIs · Analytics · │
+   │ Insights · Lead Detail      │
+   └─────────────────────────────┘
 ```
-
-The dashboard queues search requests in `ms_search_requests`. The scraper polls this table in **watch mode**, processes the request, and writes results back. The dashboard picks up changes instantly via Supabase Realtime.
 
 ---
 
-## Quick Start
+### `/// WHY IT EXISTS`
 
-### Prerequisites
+Cold outreach for freelance work usually breaks down at the same two places: **finding the right businesses** (the ones who actually need what you sell, not random names from a directory) and **writing the message** (anything generic gets ignored). LeadSniper attacks both. The 23-factor scoring surfaces leads where the gap is visible — slow site, no SSL, missing meta, no social, dated stack — and the AI drafter consumes that same signal so the message you send actually references what's wrong instead of saying "I'd love to chat."
 
-- **Node.js** v18+ ([download](https://nodejs.org/))
-- **Supabase** account (free tier — [supabase.com](https://supabase.com/))
-- **Google Cloud** account for Places API key (free $200/month credit)
-- **Google AI Studio** account for Gemini API key (free tier)
+The scraper runs locally (Playwright + browser, your IP, your API keys). The dashboard runs anywhere (Vercel free tier). Supabase wires them together with real-time so you watch leads scoring live as the scraper crunches.
 
-### 1. Clone & Install
+---
+
+### `/// HIGHLIGHTS`
+
+| | |
+|---|---|
+| **23-factor scoring** | Web presence (has site, HTTPS, mobile-responsive), SEO (title, description, schema, sitemap), social (FB/IG/LinkedIn/X presence), Core Web Vitals (LCP, FID, CLS), credibility (Google rating, review count), engagement (last update, contact methods). Each factor is a 0–10 sub-score; weighted into a 0–100 opportunity score. |
+| **No-website logic** | A lead with no website gets the *maximum* score on every web factor — they're the customer who needs you most. Counter-intuitive but correct: a perfect 100/100 site doesn't need a developer. |
+| **Real-time pipeline** | The scraper writes to Supabase as each lead is processed; the dashboard subscribes via `postgres_changes` and streams rows in. No polling, no refresh button. |
+| **Multi-channel drafts** | Gemini drafts a `cold_email`, a `whatsapp_dm`, and a `linkedin_dm` per lead. Tone + service-type modifiers (gentle / direct / playful · website-build / SEO / ads). Regenerate any channel with custom prompt overrides. |
+| **Failover Google Places keys** | Supply two `GOOGLE_PLACES_API_KEY_1/2`; the scraper rotates on 429 / quota errors and logs failed runs back to Supabase so the dashboard shows the actual failure mode. |
+| **PageSpeed status-checked** | Calls `pagespeedonline/v5/runPagespeed` per lead with a 45s timeout. HTTP status is checked before JSON parse (avoids the silent crash on 4xx/5xx). |
+| **Watch mode** | `LeadSniper.command` (double-click) → scraper polls `ms_search_requests` every 30s. Click "New search" in the dashboard, it dispatches a request, your local machine processes it. The dashboard never needs to ship Playwright. |
+| **Resilient watch-mode polling** | Transient network errors (`TypeError`, `AbortError`, `ECONNRESET`, `ETIMEDOUT`, `ENOTFOUND`) are silently retried; only real errors hit the log. |
+| **Local-first + cloud-native** | Your IP, your keys, your data — Playwright runs on your machine, never in a hosted browser farm. Supabase holds the persistent state. |
+
+---
+
+### `/// 23-FACTOR SCORE BREAKDOWN`
+
+```
+Web presence          ━━━━━━━━━━ 4 factors   (has site, HTTPS, mobile, modern stack)
+SEO basics            ━━━━━━━━━━ 4 factors   (title, description, schema, sitemap)
+Social proof          ━━━━━━━━━━ 4 factors   (Google rating, review count, response rate, recency)
+Social media presence ━━━━━━━━━━ 4 factors   (FB, IG, LinkedIn, X)
+Core Web Vitals       ━━━━━━━━━━ 3 factors   (LCP, FID, CLS)
+Contact / engagement  ━━━━━━━━━━ 4 factors   (email exposed, phone, contact form, last update)
+                                ───────────
+                                  23 factors → 0–100 opportunity score
+```
+
+See `scraper/src/scorer.js` for the actual weighting.
+
+---
+
+### `/// QUICK START`
 
 ```bash
 git clone https://github.com/hatimhtm/LeadSniper.git
 cd LeadSniper
 
-# Install dashboard dependencies
-cd dashboard && npm install && cd ..
+cp .env.example .env       # fill in Supabase URL + anon key (required)
+                           # add Google Places + Gemini keys, OR set them
+                           # later in the dashboard Settings page
 
-# Install scraper dependencies + Playwright browsers
-cd scraper && npm install && npx playwright install chromium && cd ..
+# 1) Supabase schema
+#    Open your Supabase project's SQL editor, paste supabase/schema.sql, run.
+
+# 2) Dashboard
+cd dashboard
+npm install
+npm run dev                # http://localhost:3000
+cd ..
+
+# 3) Scraper (separate terminal — keep it running)
+cd scraper
+npm install
+npx playwright install chromium
+node src/index.js watch    # idles until you trigger a search from the dashboard
 ```
 
-### 2. Database Setup
-
-1. Create a new project on [Supabase](https://supabase.com/dashboard/projects)
-2. Go to **SQL Editor** → **New Query**
-3. Paste the contents of [`supabase/schema.sql`](supabase/schema.sql) and click **Run**
-4. Go to **Project Settings** → **API** and copy your Project URL and `anon` public key
-
-### 3. Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
-```
-
-> **Important:** Never commit this file. It's already in `.gitignore`.
-
-### 4. Run Locally
-
-```bash
-# Terminal 1: Dashboard
-cd dashboard && npm run dev
-# → Open http://localhost:3000
-
-# Terminal 2: Scraper (direct search)
-cd scraper && node src/index.js "Dental Clinic" "Paris"
-
-# Or: Scraper (watch mode — waits for dashboard requests)
-cd scraper && node src/index.js watch
-```
-
-### 5. Configure API Keys
-
-Open the dashboard → **Settings** page and add:
-
-| Key | Where to Get It | Cost |
-|-----|----------------|------|
-| Google Places API Key | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → Enable "Places API (New)" | Free $200/month credit |
-| Gemini API Key | [Google AI Studio](https://aistudio.google.com/apikey) | Free tier: 1000+ req/day |
-
-Fill in your name, title, and email to personalize AI drafts.
+Or double-click `LeadSniper.command` (macOS) to launch the scraper in watch mode.
 
 ---
 
-## Deployment
-
-### Dashboard → Vercel (Free)
-
-1. Push this repo to your GitHub account
-2. Go to [vercel.com](https://vercel.com/) → **Add New Project** → Import your repo
-3. Set **Root Directory** to `dashboard`
-4. Add Environment Variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-5. Deploy — your dashboard is live!
-
-### Scraper → Your Machine
-
-The scraper uses Playwright (headless browser), which **must run locally**. This keeps costs at zero and avoids IP blocking issues with cloud functions.
-
-**macOS:** Double-click `LeadSniper.command` to launch watch mode.
-
-**Manual:**
-```bash
-cd scraper && node src/index.js watch --interval 30
-```
-
-The scraper idles with minimal RAM usage when no requests are pending.
-
----
-
-## Supabase Realtime Setup
-
-For live dashboard updates, enable Realtime on your tables:
-
-1. Go to **Supabase Dashboard** → **Database** → **Replication**
-2. Enable replication for: `ms_leads`, `ms_searches`, `ms_search_requests`
-
-> This is already included in the schema.sql, but verify it's active in your dashboard.
-
----
-
-## Project Structure
+### `/// PROJECT STRUCTURE`
 
 ```
 LeadSniper/
-├── dashboard/                    # Next.js 14 App Router
+├── dashboard/                   Next.js 14 app
 │   ├── src/
-│   │   ├── app/
-│   │   │   ├── dashboard/
-│   │   │   │   ├── page.tsx          # Overview (KPIs + charts)
-│   │   │   │   ├── layout.tsx        # Sidebar + theme + follow-ups
-│   │   │   │   ├── leads/page.tsx    # Lead table (bulk actions, hover preview)
-│   │   │   │   ├── pipeline/page.tsx # Kanban board (drag & drop)
-│   │   │   │   ├── snipe/page.tsx    # Search from dashboard + presets
-│   │   │   │   ├── insights/page.tsx # Analytics & stats
-│   │   │   │   ├── analytics/page.tsx# Event analytics
-│   │   │   │   ├── search/page.tsx   # Search history
-│   │   │   │   └── settings/page.tsx # API keys + theme picker
-│   │   │   └── api/
-│   │   │       └── regenerate/route.ts  # AI message regeneration endpoint
+│   │   ├── app/dashboard/       overview · search · snipe · leads · pipeline ·
+│   │   │                         analytics · insights · settings · lead/[id]
 │   │   ├── components/
-│   │   │   ├── dashboard/
-│   │   │   │   ├── LeadDetail.tsx    # Score diagnostic + AI regen + contact log
-│   │   │   │   ├── LeadCard.tsx      # Kanban card
-│   │   │   │   └── KPICard.tsx       # Animated stat card
-│   │   │   ├── layout/
-│   │   │   │   ├── Sidebar.tsx       # Collapsible nav
-│   │   │   │   └── Navbar.tsx        # Top bar
-│   │   │   └── ui/
-│   │   │       ├── LeadHoverCard.tsx  # Animated hover preview
-│   │   │       ├── ScoreGauge.tsx     # Circular score visualization
-│   │   │       ├── StatusBadge.tsx    # Status pill
-│   │   │       ├── SlideDrawer.tsx    # Side panel
-│   │   │       └── EmptyState.tsx     # Empty state illustration
-│   │   ├── lib/
-│   │   │   ├── hooks.ts              # Data hooks + real-time + actions
-│   │   │   ├── themes.ts             # 8 themes with CSS variables
-│   │   │   ├── supabase.ts           # Supabase client
-│   │   │   ├── settings.ts           # Settings CRUD
-│   │   │   └── utils.ts              # Helpers
-│   │   └── types/
-│   │       └── index.ts              # All TypeScript types + scoring labels
+│   │   │   ├── dashboard/       KPICard · LeadCard · LeadDetail
+│   │   │   ├── ui/              ScoreGauge · SlideDrawer · LeadHoverCard · …
+│   │   │   └── layout/          Sidebar · Navbar
+│   │   ├── lib/                 supabase client · hooks · themes · utils · settings
+│   │   ├── types/               Lead · Search · LeadStatus · SearchPreset · …
+│   │   └── app/api/regenerate/  Gemini regenerate endpoint
 │   └── package.json
-│
-├── scraper/                      # Node.js CLI Engine
-│   └── src/
-│       ├── index.js              # CLI entry + watch mode + pipeline
-│       ├── places.js             # Google Places API integration
-│       ├── crawler.js            # Playwright deep crawl
-│       ├── analyzer.js           # PageSpeed analysis + pitch angles
-│       ├── scorer.js             # 23-factor opportunity scoring
-│       ├── ai-drafter.js         # Gemini AI message generation
-│       └── config.js             # Config from .env + Supabase
-│
+├── scraper/
+│   ├── src/
+│   │   ├── index.js             commander CLI · 'snipe' + 'watch' + 'rescore' commands
+│   │   ├── places.js            Google Places API + failover key rotation
+│   │   ├── crawler.js           Playwright homepage + about + contact crawl
+│   │   ├── analyzer.js          PageSpeed Insights + tech-stack detection
+│   │   ├── scorer.js            23-factor scoring
+│   │   ├── ai-drafter.js        Gemini per-channel message drafting
+│   │   └── config.js            ENV_MAP — .env first, then ms_settings fallback
+│   └── package.json
 ├── supabase/
-│   └── schema.sql                # Complete database schema (run this first)
-│
-├── LeadSniper.command            # macOS double-click launcher
-├── .env.example                  # Template for environment variables
-└── .gitignore
+│   └── schema.sql               ms_leads · ms_searches · ms_search_requests ·
+│                                ms_settings · ms_contact_logs (+ RLS, indexes)
+├── LeadSniper.command           macOS double-click launcher (watch mode)
+├── .env.example                 every required var, with comments
+└── .github/workflows/ci.yml     builds dashboard + lints scraper
 ```
 
 ---
 
-## Security & Privacy
+### `/// SECURITY & PRIVACY`
 
-- **No hardcoded secrets** — All API keys are configured via the Settings UI or `.env` (which is gitignored)
-- **Your own Supabase** — Each user deploys their own Supabase instance. No shared database.
-- **Your own Vercel** — Each user deploys their own dashboard. No shared hosting.
-- **RLS enabled** — Row Level Security is on for all tables. The default "allow all" policy is suitable for a personal tool. Add authentication (Supabase Auth, NextAuth) before exposing publicly.
-- **No telemetry** — LeadSniper sends no data anywhere except your own Supabase and the Google APIs you configure.
-
-> **This is a personal tool.** Do not expose your dashboard publicly without authentication, as anyone could trigger searches and consume your API quota.
+- **No secrets committed.** `.env` is gitignored; the public `.env.example` is the only env file in version control.
+- **API keys never leave your machine.** Google Places and Gemini are called from the local scraper, not from the dashboard. The dashboard only reads/writes Supabase.
+- **Anon key only.** Supabase URL + anon key are in the dashboard env; service-role key isn't used anywhere. RLS policies in `schema.sql` keep the data scoped to the authenticated user.
+- **Polite scraping.** Configurable `SCRAPER_DELAY_MIN`/`MAX` between Google Places calls, Playwright resource-blocking (no images/fonts), 2-retry with backoff, 30s page timeout.
 
 ---
 
-## Tech Stack
+### `/// USAGE EXAMPLES`
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
-| Animations | Framer Motion, CSS transitions |
-| Charts | Recharts (Area, Bar, Pie, Radar) |
-| Drag & Drop | @hello-pangea/dnd |
-| Database | Supabase (PostgreSQL + Realtime) |
-| Scraper | Playwright (Chromium), Commander.js |
-| AI | Google Gemini 2.5 Flash API |
-| Analysis | Google PageSpeed Insights API (free) |
-| CLI | Commander, Chalk, Ora, cli-table3 |
-
----
-
-## Usage Examples
-
-### Direct CLI Search
 ```bash
-cd scraper
+# One-shot scrape
+node scraper/src/index.js "dental clinic" "Casablanca" --max 30
 
-# Full pipeline: search → crawl → analyze → score → AI draft
-node src/index.js "Avocat" "Paris"
+# Skip the expensive parts for a fast price-discovery pass
+node scraper/src/index.js "real estate" "Paris" --skip-crawl --skip-ai
 
-# Skip heavy steps for a quick scan
-node src/index.js "Restaurant" "Dubai" --skip-analysis --skip-ai
+# Re-score existing leads in DB (after tweaking scorer.js)
+node scraper/src/index.js rescore
 
-# Limit results
-node src/index.js "Dental Clinic" "Casablanca" --max 20
+# Watch mode — runs forever, polls the dashboard for queued searches
+node scraper/src/index.js watch --interval 30
 ```
-
-### Watch Mode (Dashboard-Driven)
-```bash
-# Start watching for dashboard requests
-node src/index.js watch --interval 30
-
-# Or on macOS, just double-click LeadSniper.command
-```
-
-### AI Regeneration (from Dashboard)
-In the Lead Detail panel, expand any channel (Email/WhatsApp/LinkedIn) and:
-- Write a custom prompt: *"pitch them a booking system for their dental practice"*
-- Toggle tone modifiers: shorter, longer, professional, casual, urgent, friendly
-- Select a service focus: Website, Web App, Mobile App, Booking System, CRM, Automation, E-Commerce
 
 ---
 
-## License
+### `/// 2.0 — POLISH PASS`
 
-MIT License. See [LICENSE](LICENSE) for details.
+- `.env.example` now lists every required var (Google Places × 2, Gemini, USER profile, scraper tuning) — was Supabase-only before.
+- `scraper/src/config.js`: extracted `ENV_MAP` constant (was duplicated between `getConfig` + `getAllConfig`).
+- `scraper/src/analyzer.js`: PageSpeed response now status-checked before `response.json()` (was a silent SyntaxError on 4xx/5xx).
+- `scraper/src/index.js` watch loop: transient network errors broadened beyond the brittle `'fetch'` substring check.
+- `dashboard/src/lib/hooks.ts`: silent error catches now log via `console.error` so they're at least debuggable.
+- `dashboard/src/components/dashboard/LeadDetail.tsx`: regenerate failures surface as inline rose-tinted error messages with auto-clear (was silent `catch {}`).
+- `dashboard/src/components/dashboard/LeadCard.tsx`: `hover:scale-110` (imperceptible on 14px icons) → `hover:opacity-70` (consistent muted-feedback pattern).
+- New brutalist hero banner SVGs + README + CI workflow.
 
 ---
 
-<div align="center">
-  <sub>Built for freelancers who hustle smart.</sub>
-</div>
+### `/// LICENSE`
+
+[MIT](LICENSE). Fork it, ship your own version, integrate it into your agency stack — just keep the copyright line.
+
+---
+
+<p align="center">
+  <a href="https://hatimelhassak.is-a.dev"><img src="https://img.shields.io/badge/PORTFOLIO-1A1A1A?style=for-the-badge&logo=vercel&logoColor=CCFF00" alt="Portfolio" /></a>
+  <a href="https://cal.com/hatimelhassak/engineering-discovery"><img src="https://img.shields.io/badge/BOOK_A_CALL-CCFF00?style=for-the-badge&logo=googlecalendar&logoColor=1A1A1A" alt="Book a call" /></a>
+  <a href="https://www.linkedin.com/in/hatim-elhassak/"><img src="https://img.shields.io/badge/LINKEDIN-1A1A1A?style=for-the-badge&logo=linkedin&logoColor=CCFF00" alt="LinkedIn" /></a>
+  <a href="mailto:hatimelhassak.official@gmail.com"><img src="https://img.shields.io/badge/EMAIL-1A1A1A?style=for-the-badge&logo=gmail&logoColor=CCFF00" alt="Email" /></a>
+</p>
+
+<p align="center">
+  <code>///&nbsp;&nbsp;OPEN FOR NEW WORK&nbsp;&nbsp;///&nbsp;&nbsp;CONTRACT &amp; FREELANCE&nbsp;&nbsp;///&nbsp;&nbsp;REMOTE WORLDWIDE&nbsp;&nbsp;///</code>
+</p>

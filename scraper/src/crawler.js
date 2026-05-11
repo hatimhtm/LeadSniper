@@ -110,7 +110,7 @@ export async function crawlWebsite(url, config) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        break; // Sucesss
+        break; // Success
       } catch (err) {
         if (attempt === 2) throw err;
         await sleep(2000); // Wait 2s before retrying

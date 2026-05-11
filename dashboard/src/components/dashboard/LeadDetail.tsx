@@ -32,6 +32,7 @@ export default function LeadDetail({ lead, onUpdate }: LeadDetailProps) {
   const [selectedTones, setSelectedTones] = useState<string[]>([]);
   const [selectedService, setSelectedService] = useState<ServiceType | ''>('');
   const [regenerating, setRegenerating] = useState<string | null>(null);
+  const [regenerateError, setRegenerateError] = useState<Record<string, string>>({});
   const [generatedMessage, setGeneratedMessage] = useState<Record<string, string>>({});
   // Contact tracking
   const [showContactLog, setShowContactLog] = useState(false);
@@ -79,12 +80,29 @@ export default function LeadDetail({ lead, onUpdate }: LeadDetailProps) {
           settings,
         }),
       });
+      if (!res.ok) {
+        throw new Error(`Regenerate failed: HTTP ${res.status}`);
+      }
       const data = await res.json();
       if (data.message) {
         setGeneratedMessage(prev => ({ ...prev, [channel]: data.message }));
+      } else if (data.error) {
+        throw new Error(data.error);
       }
-    } catch {
-      // Silently fail
+    } catch (err: unknown) {
+      // Surface the failure on the regenerate button itself — no silent
+      // catch, no surprise empty state.
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[regenerate]', msg);
+      setRegenerateError((prev) => ({ ...prev, [channel]: msg }));
+      // Auto-clear the error after a few seconds so the next click is clean
+      setTimeout(() => {
+        setRegenerateError((prev) => {
+          const next = { ...prev };
+          delete next[channel];
+          return next;
+        });
+      }, 4000);
     }
     setRegenerating(null);
   };
@@ -560,6 +578,11 @@ export default function LeadDetail({ lead, onUpdate }: LeadDetailProps) {
                               <><Sparkles size={12} /> Generate {ch.label} Message</>
                             )}
                           </button>
+                          {regenerateError[ch.key] && (
+                            <div className="text-xs px-3 py-2 rounded-md" style={{ background: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+                              ⚠ {regenerateError[ch.key]}
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     )}

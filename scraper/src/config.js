@@ -19,29 +19,33 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Single source of truth for which dashboard-settings keys map to which
+// .env variable names. Used by `getConfig` (single key) and `getAllConfig`
+// (batch) — keep them in sync via this constant, never copy-paste.
+const ENV_MAP = {
+  google_places_api_key_1: 'GOOGLE_PLACES_API_KEY_1',
+  google_places_api_key_2: 'GOOGLE_PLACES_API_KEY_2',
+  gemini_api_key:          'GEMINI_API_KEY',
+  gemini_model:            'GEMINI_MODEL',
+  scraper_delay_min:       'SCRAPER_DELAY_MIN',
+  scraper_delay_max:       'SCRAPER_DELAY_MAX',
+  scraper_max_results:     'SCRAPER_MAX_RESULTS',
+  user_name:               'USER_NAME',
+  user_title:              'USER_TITLE',
+  user_email:              'USER_EMAIL',
+  user_website:            'USER_WEBSITE',
+};
+
+const CONFIG_KEYS = Object.keys(ENV_MAP);
+
 /**
  * Gets a config value. Priority: .env → Supabase ms_settings table.
  * This means you (the dev) can use .env for convenience,
  * and anyone else cloning the repo uses the Settings UI.
  */
 export async function getConfig(key) {
-  // Map of .env variable names to settings keys
-  const envMap = {
-    google_places_api_key_1: 'GOOGLE_PLACES_API_KEY_1',
-    google_places_api_key_2: 'GOOGLE_PLACES_API_KEY_2',
-    gemini_api_key: 'GEMINI_API_KEY',
-    gemini_model: 'GEMINI_MODEL',
-    scraper_delay_min: 'SCRAPER_DELAY_MIN',
-    scraper_delay_max: 'SCRAPER_DELAY_MAX',
-    scraper_max_results: 'SCRAPER_MAX_RESULTS',
-    user_name: 'USER_NAME',
-    user_title: 'USER_TITLE',
-    user_email: 'USER_EMAIL',
-    user_website: 'USER_WEBSITE',
-  };
-
   // Check .env first
-  const envKey = envMap[key];
+  const envKey = ENV_MAP[key];
   if (envKey && process.env[envKey]) {
     return process.env[envKey];
   }
@@ -60,39 +64,12 @@ export async function getConfig(key) {
  * Get all needed config at once for performance
  */
 export async function getAllConfig() {
-  const keys = [
-    'google_places_api_key_1',
-    'google_places_api_key_2',
-    'gemini_api_key',
-    'gemini_model',
-    'scraper_delay_min',
-    'scraper_delay_max',
-    'scraper_max_results',
-    'user_name',
-    'user_title',
-    'user_email',
-    'user_website',
-  ];
-
-  const envMap = {
-    google_places_api_key_1: 'GOOGLE_PLACES_API_KEY_1',
-    google_places_api_key_2: 'GOOGLE_PLACES_API_KEY_2',
-    gemini_api_key: 'GEMINI_API_KEY',
-    gemini_model: 'GEMINI_MODEL',
-    scraper_delay_min: 'SCRAPER_DELAY_MIN',
-    scraper_delay_max: 'SCRAPER_DELAY_MAX',
-    scraper_max_results: 'SCRAPER_MAX_RESULTS',
-    user_name: 'USER_NAME',
-    user_title: 'USER_TITLE',
-    user_email: 'USER_EMAIL',
-    user_website: 'USER_WEBSITE',
-  };
-
-  // First pass: grab everything available from .env
+  // First pass: grab everything available from .env (uses the shared ENV_MAP
+  // defined above so this stays in sync with `getConfig`)
   const config = {};
   const missingKeys = [];
-  for (const key of keys) {
-    const envKey = envMap[key];
+  for (const key of CONFIG_KEYS) {
+    const envKey = ENV_MAP[key];
     if (envKey && process.env[envKey]) {
       config[key] = process.env[envKey];
     } else {
