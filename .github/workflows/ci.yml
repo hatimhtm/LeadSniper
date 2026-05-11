@@ -51,14 +51,14 @@ jobs:
           cache-dependency-path: scraper/package-lock.json
       - name: Install
         run: npm ci
-      - name: Parse-check every source file
-        # `node --check` doesn't follow imports, so for ESM we Just-Import
-        # each file. Any unresolved import or syntax error blows up here.
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+      - name: Syntax-check every source file
+        # `node --check` parses without executing — perfect for CLI entrypoints
+        # like src/index.js whose `program.parse()` would otherwise error on
+        # missing-required-arg if we tried `import()`. Bare imports (the only
+        # other class of error this check can miss) are caught by the
+        # dashboard job which actually executes its imports during `next build`.
         run: |
           for f in src/*.js; do
             echo "→ checking $f"
-            node --input-type=module -e "import('./$f').then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); })" || exit 1
+            node --check "$f" || exit 1
           done
