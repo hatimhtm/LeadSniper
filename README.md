@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5-1A1A1A?style=for-the-badge&logo=typescript&logoColor=CCFF00" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Supabase-1A1A1A?style=for-the-badge&logo=supabase&logoColor=CCFF00" alt="Supabase" />
   <img src="https://img.shields.io/badge/Playwright-1A1A1A?style=for-the-badge&logo=playwright&logoColor=CCFF00" alt="Playwright" />
-  <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-MIT-1A1A1A?style=for-the-badge&labelColor=1A1A1A&color=CCFF00" alt="MIT" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-VIEW_ONLY-1A1A1A?style=for-the-badge&labelColor=1A1A1A&color=CCFF00" alt="View-only license" /></a>
 </p>
 
 <p align="center">
@@ -216,7 +216,19 @@ node scraper/src/index.js watch --interval 30
 
 ### `/// LICENSE`
 
-[MIT](LICENSE). Fork it, ship your own version, integrate it into your agency stack — just keep the copyright line.
+[All Rights Reserved — Source-Visible](LICENSE).
+
+This is **not** an open-source repository. The code is on GitHub for the
+limited purpose of letting you **read it** — evaluate the engineering,
+study the 23-factor scoring, see how Playwright + Gemini + Supabase
+real-time fit together. That's it.
+
+**Not allowed:** running it, deploying it, copying it into another project,
+redistributing it, modifying it, sublicensing it, or commercially
+exploiting it — even for free. "Free" doesn't equal "permitted."
+
+If you want a commercial licence or a custom LeadSniper-style build for
+your agency, [get in touch](mailto:hatimelhassak.official@gmail.com).
 
 ---
 

@@ -1,21 +1,79 @@
-MIT License
+# All Rights Reserved — Source-Visible License
 
-Copyright (c) 2025 Hatim
+Copyright © 2025–2026 Hatim El Hassak. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+LeadSniper is published on GitHub for the limited and exclusive purpose
+of **inspection** — so that prospective clients, collaborators, and the
+broader engineering community can read and evaluate the author's work.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## What this license does NOT grant
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+By making this source visible on GitHub, the author does **not** grant
+you any of the following rights:
+
+- **No use.** You may not run, deploy, host, publish, or otherwise
+  operate this software (or any modified version of it), whether for
+  profit or for free, on any platform, for yourself or for others.
+- **No copying.** You may not copy any portion of this source code into
+  another project, public or private, except for the strict minimum
+  necessary for the act of reading and evaluating it in your own
+  development environment.
+- **No redistribution.** You may not redistribute this software, in
+  whole or in part, in source or binary form, by any medium.
+- **No modification or derivative works.** You may not create
+  derivative works — including but not limited to translations,
+  re-skins, ports, forks intended for use rather than evaluation, or
+  works incorporating non-trivial portions of this code.
+- **No sublicensing.** You may not grant any of the above to anyone
+  else.
+- **No commercial exploitation of any kind.** Including, without
+  limitation, selling the software, embedding it in a paid product,
+  offering paid support or hosting, or using it to train or fine-tune
+  a commercial AI/ML model.
+
+The word *"free"* in the previous sentences refers to monetary cost.
+The absence of a price tag does not create a license: even gratis use
+is **not permitted** under these terms.
+
+## What you may do
+
+- **Read** the source. Browse the files in this repository, study the
+  architecture, and use what you learn to write your own original
+  code in your own projects.
+- **Quote brief excerpts** under the fair-use / fair-dealing doctrine
+  of your jurisdiction — for example, in a technical blog post,
+  academic paper, or code-review context — provided you credit the
+  author with a link back to this repository.
+
+## Commercial / personal licensing
+
+If you want any rights beyond reading, contact the author:
+
+- Email: <mailto:hatimelhassak.official@gmail.com>
+- Book a call: <https://cal.com/hatimelhassak/engineering-discovery>
+
+Commercial licenses, source-code review engagements, and custom
+LeadSniper-style builds for your agency are negotiated case by case.
+
+## No warranty
+
+The software is provided as is, without warranty of any kind, express
+or implied, including but not limited to the warranties of
+merchantability, fitness for a particular purpose, and non-infringement.
+In no event shall the author be liable for any claim, damages, or
+other liability, whether in an action of contract, tort, or otherwise,
+arising from, out of, or in connection with the software or the use
+or other dealings in the software.
+
+## Trademarks
+
+"LeadSniper" is the name under which this software is published. This
+license does not grant any rights to use that name, the brand wordmark,
+or any related visual identity for your own products.
+
+---
+
+*Last updated: 2026. If a future version of this license appears in
+this repository, it applies only to the commits made after its
+introduction; commits made under prior terms remain governed by those
+terms.*
