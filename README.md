@@ -201,6 +201,52 @@ node scraper/src/index.js watch --interval 30
 
 ---
 
+### `/// PROFILE MODE — B2B STARTUP HUNTING (2.1)`
+
+The Places pipeline above finds **local businesses**. Profile mode finds **funded,
+founder-led companies** matching a buyer profile (ICP), with verified people-facts.
+It exists because keyword-searching Google Places for "AI healthcare startup"
+returns storefronts and lookalikes, and asking an LLM to recall founders from
+memory ships wrong CEOs and `[Founder Name]` placeholders. Profile mode does
+neither: **every fact must come from a search-grounded call, and every lead must
+survive hard QA gates before it can reach the export.**
+
+```
+buyer profile (JSON: ICP + voice + exclusions)
+      │
+      ▼
+ discover ──► verify ──► refute ──► personalize ──► QA gates ──► styled xlsx + csv
+ (grounded)  (grounded,  (grounded,  (copy only,     (reject on     (client-ready,
+              current-    tries to    voice locked    ANY defect)    Business sheet)
+              role check) DISPROVE)   to template)
+```
+
+- **Grounded or rejected** — responses without search-grounding metadata are discarded.
+- **Refute pass** — a second adversarial call per lead hunts for acquisitions, CEO
+  departures, and shutdowns. (In testing it caught Workday/Sana, Handshake/Uplimit,
+  Commure/Augmedix.)
+- **QA gates** (`profile/qa.js`) — placeholders, generic inboxes (`info@`…), emails
+  that don't match the contact's name or the company's domain, dead-MX domains,
+  non-buyer titles, malformed LinkedIn URLs, duplicates, and previously-delivered
+  companies are all hard rejects with logged reasons.
+- **Deterministic voice** — greeting/intro/sector-line/ask/signoff come verbatim from
+  the profile JSON; the model only writes the personalized fragments, which are QA'd.
+- **Checkpointed** — reruns resume the same day's progress; delivered companies are
+  registered per-profile and auto-excluded from future runs.
+
+```bash
+cd scraper
+npm run profile -- ../profiles/example.json --count 25
+#   --out file.xlsx   --no-refute   --no-mx   --discover-batch 20
+npm run test:profile        # offline QA-gate + exporter tests (no API key needed)
+```
+
+Needs only `GEMINI_API_KEY` (grounding via Google Search tool). Output lands on
+the Desktop as `<profile>-<date>-leads.xlsx` + `.csv`; rejects and their reasons
+are kept in `runs/<profile>/checkpoint-<date>.json`.
+
+---
+
 ### `/// 2.0 — POLISH PASS`
 
 - `.env.example` now lists every required var (Google Places × 2, Gemini, USER profile, scraper tuning) — was Supabase-only before.

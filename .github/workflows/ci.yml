@@ -58,7 +58,7 @@ jobs:
         # other class of error this check can miss) are caught by the
         # dashboard job which actually executes its imports during `next build`.
         run: |
-          for f in src/*.js; do
+          for f in src/*.js src/profile/*.js; do
             echo "→ checking $f"
             node --check "$f" || exit 1
           done

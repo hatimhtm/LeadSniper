@@ -7,3 +7,10 @@ dist/
 .DS_Store
 coverage/
 tsconfig.tsbuildinfo
+
+# client data — never commit
+runs/
+profiles/*
+!profiles/example.json
+data.db
+*.db

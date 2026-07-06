@@ -1,0 +1,46 @@
+{
+  "slug": "example",
+  "name": "Alex Morgan — Example Strategy Co",
+  "brand": "leadsniper",
+  "icp": {
+    "summary": "Founders and senior leaders at funded, founder-led AI companies in healthcare and education: diagnostics, clinical operations, medical technology, student success, and workforce learning. Post-POC through early growth. US preferred, global if highly relevant.",
+    "sectors": {
+      "health": "AI in healthcare: diagnostics, clinical operations, preventive care, medical technology, care access",
+      "edu": "AI in education: K-12, student success, tutoring, teaching platforms",
+      "work": "AI in workforce training, upskilling, and expert-led learning"
+    },
+    "buyer_roles": ["Founder", "Co-founder", "CEO", "Chancellor"],
+    "bad_fit": [
+      "idea-stage companies with no proof of concept",
+      "generic dev shops, app development agencies, consultancies",
+      "accelerators, coworking spaces, university programs, nonprofits",
+      "companies acquired or absorbed into a parent",
+      "companies whose founder is no longer in the leadership seat"
+    ],
+    "examples": []
+  },
+  "voice": {
+    "greeting": "Hey {first}, how are you? I hope all is good these days.",
+    "intro": "I am Alex, a marketing and brand strategist with more than 15 years of experience helping companies clarify their story and build market trust.",
+    "sector_lines": {
+      "health": "These days I work with founder led AI companies in healthcare to clarify their story, sharpen their positioning, and build real trust with patients, clinicians, investors, and the press.",
+      "edu": "These days I work with founder led AI companies in education to clarify their story, sharpen their positioning, and build real trust with students, educators, investors, and the press.",
+      "work": "These days I work with founder led AI companies in workforce learning to clarify their story, sharpen their positioning, and build real trust with customers, learners, investors, and the press."
+    },
+    "ask": "Would you be open to a quick chat? I would be happy to share a few ideas made just for {company}.",
+    "signoff": "Talk soon,\nAlex",
+    "dm_template": "Hi {first}, I admire what you are building at {company}, {dm_clause}. I am Alex, a brand strategist who helps founder led AI {dm_sector} companies sharpen their story and stand out. Open to a quick chat?",
+    "dm_sector_words": { "health": "healthcare", "edu": "education", "work": "education" }
+  },
+  "business_sheet": [
+    ["Name", "Alex Morgan — Example Strategy Co"],
+    ["Offer", "Marketing, brand strategy, and PR for founder led companies: positioning, go to market, launch content, and press."],
+    ["Target customer", "Funded, founder led AI companies in healthcare and education, post POC through early growth."],
+    ["Location", "New York, US"],
+    ["Language", "english"],
+    ["Links", "https://example.com · alex@example-strategy.co"],
+    ["Value prop", "15+ years in marketing and brand strategy for high-growth companies"],
+    ["Value prop", "Turns complex ideas into clear messaging that customers, investors, and the press understand"]
+  ],
+  "exclude_companies": ["Aidoc", "Cleerly", "SchoolAI"]
+}

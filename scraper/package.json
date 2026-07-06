@@ -5,15 +5,18 @@
   "type": "module",
   "scripts": {
     "scrape": "node src/index.js",
-    "enrich": "node src/enrich.js"
+    "enrich": "node src/enrich.js",
+    "profile": "node src/profile/run.js",
+    "test:profile": "node test_profile_qa.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "chalk": "^5.3.0",
+    "cli-table3": "^0.6.5",
     "commander": "^12.1.0",
     "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
     "ora": "^8.1.1",
-    "playwright": "^1.49.1",
-    "cli-table3": "^0.6.5"
+    "playwright": "^1.49.1"
   }
 }
