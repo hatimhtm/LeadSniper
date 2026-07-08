@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import { validateLead, validateCopy, validateBatch } from './src/profile/qa.js';
 import { buildLead } from './src/profile/drafter.js';
+import { applySignals, scoreLead } from './src/profile/signal.js';
 import { exportXlsx, exportCsv } from './src/profile/export.js';
 
 const profile = JSON.parse(fs.readFileSync(new URL('../profiles/example.json', import.meta.url), 'utf8'));
@@ -83,8 +84,17 @@ const fresh = { ...assembled, company: 'FreshCo Health' };
 t('batch rejects already-delivered company (Aidoc)', !validateBatch([assembled], profile).pass);
 t('batch accepts clean set', validateBatch([fresh], profile).pass);
 
+// signal scoring
+const hotLead = { ...assembled, site_news: 'Launched Foo 2.0', email_smtp: 'deliverable', funding: 'Series E, $150M, 2026' };
+t('hot lead scores Hot', scoreLead(hotLead).label === 'Hot');
+t('bare lead scores Steady', scoreLead({ ...assembled, funding: 'Series A, $5M, 2021', email_source: 'pattern' }).label === 'Steady');
+const sorted = applySignals([{ ...assembled, company: 'B', funding: 'Series A, $5M, 2021', email_source: 'pattern' }, { ...hotLead, company: 'A' }]);
+t('signals sort hottest first', sorted[0].company === 'A' && sorted[0].signal === 'Hot');
+
 // exporter structure check
 const outX = '/tmp/test-profile-export.xlsx';
+applySignals([assembled]);
+assembled.site_news = 'Launched Foo 2.0';
 const outC = '/tmp/test-profile-export.csv';
 await exportXlsx([assembled], profile, outX, '2026-07-07');
 exportCsv([assembled], outC);
@@ -92,14 +102,17 @@ const ExcelJS = (await import('exceljs')).default;
 const wb = new ExcelJS.Workbook();
 await wb.xlsx.readFile(outX);
 const ws = wb.getWorksheet('Leads');
-t('xlsx has Leads + Business sheets', wb.worksheets.map((w) => w.name).join() === 'Leads,Business');
+t('xlsx has Leads + Report + Business sheets', wb.worksheets.map((w) => w.name).join() === 'Leads,Report,Business');
 t('title block merged and branded', ws.getCell('B1').isMerged && ws.getCell('A3').value === profile.brand);
-t('header row has funding column', JSON.stringify(ws.getRow(4).values.slice(1)) === JSON.stringify(['#','Company','Contact','Role','Category','Funding','Location','Email','LinkedIn','Niche','Why they fit','Email subject','Email outreach','DM opener']));
+t('header row matches 16-col layout', JSON.stringify(ws.getRow(4).values.slice(1)) === JSON.stringify(['#','Company','Contact','Role','Signal','Category','Funding','Location','Email','LinkedIn','Niche',"What's happening now",'Why they fit','Email subject','Email outreach','DM opener']));
 t('frozen at row 4', ws.views[0].ySplit === 4 && ws.views[0].state === 'frozen');
 const companyCell = ws.getCell('B5').value;
 t('company cell hyperlinks to homepage', companyCell && companyCell.text === 'Aidoc' && companyCell.hyperlink === 'https://aidoc.com');
-t('funding column populated', String(ws.getCell('F5').value).includes('$150M'));
-t('lead row present', ws.getCell('H5').value === 'elad@aidoc.com');
+t('signal column populated', ['Hot','Warm','Steady'].includes(ws.getCell('E5').value));
+t('funding column populated', String(ws.getCell('G5').value).includes('$150M'));
+t('whats-happening column populated', String(ws.getCell('L5').value).includes('Foo 2.0'));
+t('lead row present', ws.getCell('I5').value === 'elad@aidoc.com');
+t('report sheet has stats', String(wb.getWorksheet('Report').getCell('A2').value) === 'Leads delivered');
 const csv = fs.readFileSync(outC, 'utf8');
 t('csv mirrors table', csv.startsWith('#,Company,Contact') && csv.includes('elad@aidoc.com'));
 
