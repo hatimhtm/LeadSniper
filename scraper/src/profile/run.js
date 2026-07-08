@@ -127,7 +127,7 @@ async function main() {
       }
 
       // homepage insight pass: what is the site announcing right now, and what
-      // does that mean the company needs next (Danny's Polaris 5.0 point)
+      // does that mean the company needs next
       let intel = null;
       if (args.intel) {
         intel = await siteIntel(config, profile, rec).catch(() => null);

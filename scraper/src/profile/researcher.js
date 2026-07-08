@@ -172,7 +172,7 @@ Return ONLY a JSON object: {"refuted": true/false, "reason": "the contrary evide
 }
 
 // Fetches the company homepage and distills it into a SELLING INSIGHT, not a
-// summary. Danny's example: Hippocratic AI's banner says "Polaris 5.0 is here"
+// summary. Example: a prospect's banner announces a new flagship model
 // → the insight is "major launch, their story/site needs to catch up — perfect
 // moment for the buyer's positioning work", not "they have a new model".
 export async function siteIntel(config, profile, record) {

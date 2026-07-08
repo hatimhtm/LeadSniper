@@ -137,7 +137,7 @@ export async function validateLead(lead, profile, { checkMx = true, checkSmtp = 
     if (!lead[f] || !String(lead[f]).trim()) reasons.push(`missing field: ${f}`);
   }
 
-  // Danny-rule: funding must carry actual numbers ("$126M, 2025"), not vibes.
+  // funding must carry actual numbers ("$126M, 2025"), not vibes.
   if (lead.funding && !/\d/.test(String(lead.funding))) {
     reasons.push(`funding has no numbers: ${lead.funding}`);
   }
