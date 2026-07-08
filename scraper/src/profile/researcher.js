@@ -171,33 +171,65 @@ Return ONLY a JSON object: {"refuted": true/false, "reason": "the contrary evide
   }
 }
 
-// Non-grounded call for copywriting only — no facts may originate here beyond
-// what the verified record already contains.
-export async function personalize(config, profile, record) {
+// Fetches the company homepage and distills it into a SELLING INSIGHT, not a
+// summary. Danny's example: Hippocratic AI's banner says "Polaris 5.0 is here"
+// → the insight is "major launch, their story/site needs to catch up — perfect
+// moment for the buyer's positioning work", not "they have a new model".
+export async function siteIntel(config, profile, record) {
+  const html = await fetchHomepage(record.website_domain);
+  if (!html) return null;
+
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 4000);
+
+  const prompt = `You are a sales-intelligence analyst working for this service provider:
+"${profile.icp.summary}"
+Their offer, in short: ${profile.business_sheet?.find((r) => r[0] === 'Offer')?.[1] || 'brand, positioning, and PR strategy'}.
+
+Below is the CURRENT homepage text of ${record.company} (${record.website_domain}), a prospect. Read it and extract:
+1. whats_new: the single freshest concrete thing the site is announcing right now (a launch, a new model/product, a partnership, a milestone). One sentence, specific. Empty string if nothing clearly new.
+2. opportunity: the INSIGHT — given what is new, what does this company likely NEED right now that the provider sells? Think one step past the announcement: a major launch usually means their positioning, website, story, and press push need to catch up with the product. One sentence, specific to this company. Never generic filler.
+3. evidence: the exact site phrase that supports whats_new (short quote).
+
+Use ONLY the homepage text. Never invent announcements.
+
+HOMEPAGE TEXT:
+${text}
+
+Return ONLY JSON: {"whats_new": "", "opportunity": "", "evidence": ""}`;
+
+  try {
+    const out = await callGeminiJson(config, prompt, 0.3);
+    if (out && (out.whats_new || out.opportunity)) return out;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchHomepage(domain) {
+  for (const url of [`https://${domain}`, `https://www.${domain}`]) {
+    try {
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36' },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(15000),
+      });
+      if (res.ok) {
+        const html = await res.text();
+        if (html.length > 500) return html;
+      }
+    } catch { /* try next */ }
+  }
+  return null;
+}
+
+async function callGeminiJson(config, prompt, temperature = 0.7) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${config.gemini_model}:generateContent?key=${config.gemini_api_key}`;
-
-  const prompt = `You write outreach copy fragments in a specific voice. Warm, plain, confident. No hype words (revolutionary, game-changing, cutting-edge), no em dashes, no exclamation marks. Keep years, dollar amounts, and counts as numerals (2026, $101M, 2,000 hospitals) — never spell them out. Never invent facts — use ONLY the facts given.
-
-FACTS:
-Company: ${record.company}
-What they do: ${record.niche}
-Recent trigger: ${record.hook}
-Sector: ${record.sector}
-
-Reference fragments in the target voice (from an approved sample):
-- p2: "What you are building at Cleerly, using AI to catch heart disease early from a scan, is genuinely important. Big ideas like that spread fastest when the story is as clear as the science."
-- closer: "If you are getting ready to raise, launch, or simply get more visible, this is exactly the moment a clear story pays off."
-- dm_clause: "the way Cleerly catches heart disease early is genuinely important"
-- subject: "Telling the Cleerly story as clearly as the science"
-
-Write for ${record.company}. Return ONLY a JSON object:
-{"category": "2-4 word industry label like 'AI cardiac diagnostics'",
- "why": "one sentence for a 'Why they fit' column: funded/founder-led + what makes now the moment",
- "subject": "email subject under 60 chars, no colon spam",
- "p2": "2 sentences: sincere specific praise referencing what they do plus the trigger event",
- "closer": "1 sentence tying the trigger event to why now is the moment for a clear story",
- "dm_clause": "short clause completing 'I admire what you are building at ${record.company}, ...'"}`;
-
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       const response = await fetch(url, {
@@ -205,7 +237,7 @@ Write for ${record.company}. Return ONLY a JSON object:
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2048, responseMimeType: 'application/json' },
+          generationConfig: { temperature, maxOutputTokens: 2048, responseMimeType: 'application/json' },
         }),
         signal: AbortSignal.timeout(60000),
       });
@@ -219,6 +251,43 @@ Write for ${record.company}. Return ONLY a JSON object:
       await sleep(2000 * (attempt + 1));
     }
   }
+}
+
+// Non-grounded call for copywriting only — no facts may originate here beyond
+// what the verified record and site intel already contain.
+export async function personalize(config, profile, record, intel = null) {
+  const intelBlock = intel
+    ? `\nFresh from their homepage TODAY:\n- What's new: ${intel.whats_new || 'n/a'}\n- The opportunity this creates: ${intel.opportunity || 'n/a'}`
+    : '';
+
+  const prompt = `You write outreach copy fragments in a specific voice. Warm, plain, confident. No hype words (revolutionary, game-changing, cutting-edge), no em dashes, no exclamation marks. Keep years, dollar amounts, and counts as numerals (2026, $101M, 2,000 hospitals) — never spell them out. Never invent facts — use ONLY the facts given.
+
+FACTS:
+Company: ${record.company}
+What they do: ${record.niche}
+Recent trigger: ${record.hook}
+Funding: ${record.funding}
+Sector: ${record.sector}${intelBlock}
+
+Reference fragments in the target voice (from an approved sample):
+- p2: "What you are building at Cleerly, using AI to catch heart disease early from a scan, is genuinely important. Big ideas like that spread fastest when the story is as clear as the science."
+- closer: "If you are getting ready to raise, launch, or simply get more visible, this is exactly the moment a clear story pays off."
+- dm_clause: "the way Cleerly catches heart disease early is genuinely important"
+- subject: "Telling the Cleerly story as clearly as the science"
+
+RULES:
+- If homepage intel is present, p2 must reference the fresh announcement specifically, and closer must turn the opportunity insight into the reason to talk NOW (one step past the news: what they need next, not what they just did).
+- "why" must include the concrete funding numbers (round, amount) so the reader sees budget at a glance.
+
+Write for ${record.company}. Return ONLY a JSON object:
+{"category": "2-4 word industry label like 'AI cardiac diagnostics'",
+ "why": "one sentence for a 'Why they fit' column: founder-led + funding with numbers + what makes now the moment",
+ "subject": "email subject under 60 chars, no colon spam",
+ "p2": "2 sentences: sincere specific praise referencing what they do plus the freshest concrete event",
+ "closer": "1 sentence turning the current moment into why a clear story pays off now",
+ "dm_clause": "short clause completing 'I admire what you are building at ${record.company}, ...'"}`;
+
+  return callGeminiJson(config, prompt, 0.7);
 }
 
 export function logStep(msg) {

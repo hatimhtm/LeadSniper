@@ -1,4 +1,5 @@
 import dns from 'node:dns/promises';
+import net from 'node:net';
 
 // Hard gates between research and export. A lead that fails ANY gate is rejected
 // with a reason — nothing "mostly fine" ever reaches the client file. Every rule
@@ -15,7 +16,7 @@ const PLACEHOLDER_RE = /\[[^\]]*\]|domain\.com|example\.com|founder name|your na
 
 const REQUIRED_FIELDS = [
   'company', 'contact_name', 'title', 'linkedin', 'location', 'niche', 'hook',
-  'email', 'website_domain', 'sector',
+  'email', 'website_domain', 'sector', 'funding',
 ];
 
 function normalize(s) {
@@ -68,12 +69,77 @@ export async function mxResolves(email) {
   }
 }
 
+// SMTP handshake probe: connect to the domain's MX and issue RCPT TO without
+// sending mail. Returns:
+//   'deliverable'  server accepted the exact mailbox and rejected a random one
+//   'accept-all'   server accepts anything at the domain (probe can't confirm)
+//   'rejected'     server explicitly refused the mailbox — hard fail
+//   'unknown'      port 25 blocked/greylisted/timeout — probe inconclusive
+// Many networks block outbound 25, so 'unknown' must never fail a lead on its own.
+export async function smtpProbe(email, { timeoutMs = 12000 } = {}) {
+  const domain = email.split('@')[1];
+  let mx;
+  try {
+    const records = await dns.resolveMx(domain);
+    if (!records.length) return 'rejected';
+    mx = records.sort((a, b) => a.priority - b.priority)[0].exchange;
+  } catch {
+    return 'rejected';
+  }
+
+  const randomLocal = `qa-probe-${Math.random().toString(36).slice(2, 10)}`;
+  return new Promise((resolve) => {
+    const socket = net.createConnection(25, mx);
+    let buffer = '';
+    let step = 0;
+    let realStatus = null;
+    const finish = (result) => { socket.destroy(); resolve(result); };
+    const timer = setTimeout(() => finish('unknown'), timeoutMs);
+    socket.on('error', () => { clearTimeout(timer); finish('unknown'); });
+    socket.on('close', () => { clearTimeout(timer); resolve('unknown'); });
+
+    socket.on('data', (chunk) => {
+      buffer += chunk.toString();
+      if (!/\r?\n$/.test(buffer)) return;
+      const code = parseInt(buffer.slice(0, 3), 10);
+      // ignore multiline continuations like "250-"
+      if (buffer.split('\n').filter(Boolean).pop()?.[3] === '-') return;
+      buffer = '';
+      clearTimeout(timer);
+      const next = setTimeout(() => finish('unknown'), timeoutMs);
+      socket.once('close', () => clearTimeout(next));
+
+      if (step === 0 && code === 220) { socket.write('EHLO mail.leadsniper.dev\r\n'); step = 1; }
+      else if (step === 1 && code === 250) { socket.write('MAIL FROM:<verify@leadsniper.dev>\r\n'); step = 2; }
+      else if (step === 2 && code === 250) { socket.write(`RCPT TO:<${email}>\r\n`); step = 3; }
+      else if (step === 3) {
+        if (code === 250 || code === 251) {
+          realStatus = 'accepted';
+          socket.write(`RCPT TO:<${randomLocal}@${domain}>\r\n`);
+          step = 4;
+        } else if (code >= 550 && code <= 554) {
+          clearTimeout(next); finish('rejected');
+        } else { clearTimeout(next); finish('unknown'); }
+      } else if (step === 4) {
+        clearTimeout(next);
+        if (code === 250 || code === 251) finish('accept-all');
+        else finish(realStatus === 'accepted' ? 'deliverable' : 'unknown');
+      } else { clearTimeout(next); finish('unknown'); }
+    });
+  });
+}
+
 // Validates one verified+personalized lead. Returns { pass, reasons[] }.
-export async function validateLead(lead, profile, { checkMx = true } = {}) {
+export async function validateLead(lead, profile, { checkMx = true, checkSmtp = false } = {}) {
   const reasons = [];
 
   for (const f of REQUIRED_FIELDS) {
     if (!lead[f] || !String(lead[f]).trim()) reasons.push(`missing field: ${f}`);
+  }
+
+  // Danny-rule: funding must carry actual numbers ("$126M, 2025"), not vibes.
+  if (lead.funding && !/\d/.test(String(lead.funding))) {
+    reasons.push(`funding has no numbers: ${lead.funding}`);
   }
 
   for (const [k, v] of Object.entries(lead)) {
@@ -97,6 +163,12 @@ export async function validateLead(lead, profile, { checkMx = true } = {}) {
       }
       if (checkMx && reasons.length === 0 && !(await mxResolves(email))) {
         reasons.push(`no MX records for ${email.split('@')[1]}`);
+      }
+      if (checkSmtp && reasons.length === 0) {
+        lead.email_smtp = await smtpProbe(email);
+        if (lead.email_smtp === 'rejected') {
+          reasons.push(`SMTP server refused mailbox ${email}`);
+        }
       }
     }
   }

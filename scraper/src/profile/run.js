@@ -5,7 +5,7 @@ import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import chalk from 'chalk';
 import { getAllConfig } from '../config.js';
-import { discoverCandidates, verifyCompany, refuteRecord, personalize, findLinkedIn } from './researcher.js';
+import { discoverCandidates, verifyCompany, refuteRecord, personalize, findLinkedIn, siteIntel } from './researcher.js';
 import { validateLead, validateCopy, validateBatch } from './qa.js';
 import { buildLead } from './drafter.js';
 import { exportXlsx, exportCsv } from './export.js';
@@ -18,18 +18,20 @@ import { exportXlsx, exportCsv } from './export.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function parseArgs(argv) {
-  const args = { count: 25, refute: true, mx: true, batch: 0, out: null, profile: null };
+  const args = { count: 25, refute: true, mx: true, smtp: true, intel: true, batch: 0, out: null, profile: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--count') args.count = parseInt(argv[++i], 10);
     else if (a === '--out') args.out = argv[++i];
     else if (a === '--no-refute') args.refute = false;
     else if (a === '--no-mx') args.mx = false;
+    else if (a === '--no-smtp') args.smtp = false;
+    else if (a === '--no-intel') args.intel = false;
     else if (a === '--discover-batch') args.batch = parseInt(argv[++i], 10);
     else if (!a.startsWith('--')) args.profile = a;
   }
   if (!args.profile) {
-    console.error('Usage: node src/profile/run.js <profile.json> [--count 25] [--out file.xlsx] [--no-refute] [--no-mx]');
+    console.error('Usage: node src/profile/run.js <profile.json> [--count 25] [--out file.xlsx] [--no-refute] [--no-mx] [--no-smtp] [--no-intel]');
     process.exit(1);
   }
   return args;
@@ -124,9 +126,20 @@ async function main() {
         }
       }
 
+      // homepage insight pass: what is the site announcing right now, and what
+      // does that mean the company needs next (Danny's Polaris 5.0 point)
+      let intel = null;
+      if (args.intel) {
+        intel = await siteIntel(config, profile, rec).catch(() => null);
+        if (intel?.whats_new) {
+          rec.site_news = intel.whats_new;
+          console.log(`${tag} ${chalk.blue('◆ site:')} ${intel.whats_new}`);
+        }
+      }
+
       let lead;
       for (let attempt = 0; attempt < 2; attempt++) {
-        const fragments = await personalize(config, profile, rec);
+        const fragments = await personalize(config, profile, rec, intel);
         lead = buildLead(rec, fragments, profile);
         const copyCheck = validateCopy(lead, profile);
         if (copyCheck.pass) break;
@@ -138,7 +151,7 @@ async function main() {
         }
       }
 
-      const check = await validateLead(lead, profile, { checkMx: args.mx });
+      const check = await validateLead(lead, profile, { checkMx: args.mx, checkSmtp: args.smtp });
       if (!check.pass) {
         ckpt.rejected.push({ company: rec.company, stage: 'lead QA', reasons: check.reasons });
         console.log(`${tag} ${chalk.red('✗ lead QA:')} ${check.reasons.join('; ')}`);
@@ -167,15 +180,32 @@ async function main() {
 
   const outX = args.out || path.join(os.homedir(), 'Desktop', `${profile.slug}-${today()}-leads.xlsx`);
   const outC = outX.replace(/\.xlsx$/, '.csv');
-  await exportXlsx(leads, profile, outX, today());
+  const iconPath = profile.brand_icon
+    ? path.resolve(path.dirname(profilePath), profile.brand_icon)
+    : null;
+  await exportXlsx(leads, profile, outX, today(), { iconPath });
   exportCsv(leads, outC);
+
+  // audit trail: every accepted lead with its verification evidence, so the
+  // deliverable is reviewable without re-research
+  const auditPath = outX.replace(/\.xlsx$/, '.audit.json');
+  fs.writeFileSync(auditPath, JSON.stringify(leads.map((l) => ({
+    company: l.company, contact: l.contact_name, title: l.title,
+    verified_on: l.verified_on, funding: l.funding,
+    email: l.email, email_source: l.email_source,
+    email_evidence: l.email_evidence || '', email_smtp: l.email_smtp || 'not probed',
+    site_news: l.site_news || '', linkedin: l.linkedin,
+  })), null, 1));
 
   fs.writeFileSync(deliveredPath, JSON.stringify([...new Set([...delivered, ...leads.map((l) => l.company)])], null, 1));
 
   const published = leads.filter((l) => l.email_source === 'published').length;
   console.log(chalk.bold.green(`\n✓ ${leads.length} leads exported`));
   console.log(`  ${outX}\n  ${outC}`);
-  console.log(`  emails: ${published} published · ${leads.length - published} pattern-derived`);
+  const smtpOk = leads.filter((l) => l.email_smtp === 'deliverable').length;
+  const acceptAll = leads.filter((l) => l.email_smtp === 'accept-all').length;
+  console.log(`  emails: ${published} published · ${leads.length - published} pattern-derived · SMTP: ${smtpOk} confirmed, ${acceptAll} accept-all domains`);
+  console.log(`  audit trail: ${auditPath}`);
   console.log(`  rejected this run: ${ckpt.rejected.length} (see ${path.relative(process.cwd(), ckptPath)})`);
   if (leads.length < args.count) {
     console.log(chalk.yellow(`  NOTE: only ${leads.length}/${args.count} — rerun to top up (checkpoint resumes automatically)`));

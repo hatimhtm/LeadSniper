@@ -35,6 +35,7 @@ const bads = [
   ['non-buyer role', { ...good, title: 'VP of Sales' }],
   ['bad linkedin', { ...good, linkedin: 'https://www.linkedin.com/company/aidoc' }],
   ['missing hook', { ...good, hook: '' }],
+  ['funding without numbers', { ...good, funding: 'well funded' }],
   ['dead MX domain', { ...good, email: 'elad@aidoc-no-such-domain-xyz123.com', website_domain: 'aidoc-no-such-domain-xyz123.com' }],
 ];
 
@@ -93,9 +94,12 @@ await wb.xlsx.readFile(outX);
 const ws = wb.getWorksheet('Leads');
 t('xlsx has Leads + Business sheets', wb.worksheets.map((w) => w.name).join() === 'Leads,Business');
 t('title block merged and branded', ws.getCell('B1').isMerged && ws.getCell('A3').value === profile.brand);
-t('header row matches sample', JSON.stringify(ws.getRow(4).values.slice(1)) === JSON.stringify(['#','Company','Contact','Role','Category','Location','Email','LinkedIn','Niche','Why they fit','Email subject','Email outreach','DM opener']));
+t('header row has funding column', JSON.stringify(ws.getRow(4).values.slice(1)) === JSON.stringify(['#','Company','Contact','Role','Category','Funding','Location','Email','LinkedIn','Niche','Why they fit','Email subject','Email outreach','DM opener']));
 t('frozen at row 4', ws.views[0].ySplit === 4 && ws.views[0].state === 'frozen');
-t('lead row present', ws.getCell('B5').value === 'Aidoc' && ws.getCell('G5').value === 'elad@aidoc.com');
+const companyCell = ws.getCell('B5').value;
+t('company cell hyperlinks to homepage', companyCell && companyCell.text === 'Aidoc' && companyCell.hyperlink === 'https://aidoc.com');
+t('funding column populated', String(ws.getCell('F5').value).includes('$150M'));
+t('lead row present', ws.getCell('H5').value === 'elad@aidoc.com');
 const csv = fs.readFileSync(outC, 'utf8');
 t('csv mirrors table', csv.startsWith('#,Company,Contact') && csv.includes('elad@aidoc.com'));
 

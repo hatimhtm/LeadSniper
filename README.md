@@ -225,19 +225,33 @@ buyer profile (JSON: ICP + voice + exclusions)
 - **Refute pass** — a second adversarial call per lead hunts for acquisitions, CEO
   departures, and shutdowns. (In testing it caught Workday/Sana, Handshake/Uplimit,
   Commure/Augmedix.)
+- **Site-intel insight** — fetches each lead's live homepage and extracts not just
+  *what they're announcing* but *what that means they need next* (a fresh model
+  launch usually means positioning, site, and press have to catch up) — and the
+  outreach references it.
+- **SMTP mailbox probe** — beyond MX records, the QA layer does an RCPT-TO handshake
+  against the domain's mail server: explicit rejections kill the lead, accept-all
+  domains are flagged in the audit trail. (Inconclusive probes — port 25 blocked —
+  never fail a lead on their own.)
 - **QA gates** (`profile/qa.js`) — placeholders, generic inboxes (`info@`…), emails
   that don't match the contact's name or the company's domain, dead-MX domains,
-  non-buyer titles, malformed LinkedIn URLs, duplicates, and previously-delivered
-  companies are all hard rejects with logged reasons.
+  SMTP-refused mailboxes, funding without numbers, non-buyer titles, malformed
+  LinkedIn URLs, duplicates, and previously-delivered companies are all hard rejects
+  with logged reasons.
 - **Deterministic voice** — greeting/intro/sector-line/ask/signoff come verbatim from
   the profile JSON; the model only writes the personalized fragments, which are QA'd.
+- **Client-ready file** — company names hyperlink to their homepages, a Funding column
+  shows round + amount at a glance, and the profile's brand icon is embedded in the
+  title block. A `.audit.json` ships next to every export: per-lead verification
+  evidence (sources, dates, SMTP status, site news) so results are reviewable without
+  re-research.
 - **Checkpointed** — reruns resume the same day's progress; delivered companies are
   registered per-profile and auto-excluded from future runs.
 
 ```bash
 cd scraper
 npm run profile -- ../profiles/example.json --count 25
-#   --out file.xlsx   --no-refute   --no-mx   --discover-batch 20
+#   --out file.xlsx   --no-refute   --no-mx   --no-smtp   --no-intel   --discover-batch 20
 npm run test:profile        # offline QA-gate + exporter tests (no API key needed)
 ```
 

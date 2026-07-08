@@ -10,17 +10,17 @@ const GREEN_TXT = 'FF107030';
 const DARK = 'FF14301E';
 const BORDER = 'FFCFE8D6';
 
-const HEADERS = ['#', 'Company', 'Contact', 'Role', 'Category', 'Location', 'Email',
+const HEADERS = ['#', 'Company', 'Contact', 'Role', 'Category', 'Funding', 'Location', 'Email',
   'LinkedIn', 'Niche', 'Why they fit', 'Email subject', 'Email outreach', 'DM opener'];
-const WIDTHS = [12, 20, 20, 20, 24, 16, 28, 36, 40, 40, 28, 72, 50];
-const KEYS = ['num', 'company', 'contact_name', 'title', 'category', 'location', 'email',
+const WIDTHS = [12, 20, 20, 20, 24, 26, 16, 28, 36, 40, 40, 28, 72, 50];
+const KEYS = ['num', 'company', 'contact_name', 'title', 'category', 'funding', 'location', 'email',
   'linkedin', 'niche', 'why', 'subject', 'email_outreach', 'dm'];
-const WRAP_KEYS = new Set(['niche', 'why', 'subject', 'email_outreach', 'dm']);
+const WRAP_KEYS = new Set(['funding', 'niche', 'why', 'subject', 'email_outreach', 'dm']);
 
 const font = (opts) => ({ name: 'Cambria', ...opts });
 const greenFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
 
-export async function exportXlsx(leads, profile, outPath, date) {
+export async function exportXlsx(leads, profile, outPath, date, { iconPath = null } = {}) {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Leads', {
     views: [{ state: 'frozen', ySplit: 4, showGridLines: false }],
@@ -28,10 +28,16 @@ export async function exportXlsx(leads, profile, outPath, date) {
 
   ws.columns = WIDTHS.map((w) => ({ width: w }));
 
-  ws.mergeCells('B1:M3');
+  ws.mergeCells('B1:N3');
   for (let r = 1; r <= 3; r++) {
     ws.getRow(r).height = 25.5;
-    for (let c = 2; c <= 13; c++) ws.getRow(r).getCell(c).fill = greenFill;
+    for (let c = 2; c <= 14; c++) ws.getRow(r).getCell(c).fill = greenFill;
+  }
+
+  if (iconPath && fs.existsSync(iconPath)) {
+    const img = wb.addImage({ filename: iconPath, extension: 'png' });
+    // sits in the A1:A2 pocket above the brand name in A3
+    ws.addImage(img, { tl: { col: 0.15, row: 0.1 }, ext: { width: 58, height: 58 } });
   }
   const title = ws.getCell('B1');
   title.value = `${profile.name}\nLead list  ·  ${leads.length} verified leads  ·  ${date}`;
@@ -60,8 +66,13 @@ export async function exportXlsx(leads, profile, outPath, date) {
     row.height = 165;
     KEYS.forEach((k, j) => {
       const cell = row.getCell(j + 1);
-      cell.value = k === 'num' ? i + 1 : L[k];
-      cell.font = font({ size: 10, color: { argb: DARK } });
+      if (k === 'company' && L.website_domain) {
+        cell.value = { text: L[k], hyperlink: `https://${L.website_domain}` };
+        cell.font = font({ size: 10, color: { argb: DARK }, underline: true });
+      } else {
+        cell.value = k === 'num' ? i + 1 : L[k];
+        cell.font = font({ size: 10, color: { argb: DARK } });
+      }
       cell.alignment = { horizontal: 'left', vertical: 'top', wrapText: WRAP_KEYS.has(k) };
       cell.border = { bottom: { style: 'thin', color: { argb: BORDER } } };
     });
