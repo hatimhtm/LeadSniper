@@ -2,6 +2,11 @@
   "slug": "example",
   "name": "Alex Morgan — Example Strategy Co",
   "brand": "leadsniper",
+  "brand_url": "https://example.com",
+  "agent": {
+    "name": "LeadSniper",
+    "description": "an AI prospecting agent that finds, verifies, and drafts outreach for your ideal customers."
+  },
   "icp": {
     "summary": "Founders and senior leaders at funded, founder-led AI companies in healthcare and education: diagnostics, clinical operations, medical technology, student success, and workforce learning. Post-POC through early growth. US preferred, global if highly relevant.",
     "sectors": {
@@ -9,7 +14,12 @@
       "edu": "AI in education: K-12, student success, tutoring, teaching platforms",
       "work": "AI in workforce training, upskilling, and expert-led learning"
     },
-    "buyer_roles": ["Founder", "Co-founder", "CEO", "Chancellor"],
+    "buyer_roles": [
+      "Founder",
+      "Co-founder",
+      "CEO",
+      "Chancellor"
+    ],
     "bad_fit": [
       "idea-stage companies with no proof of concept",
       "generic dev shops, app development agencies, consultancies",
@@ -30,17 +40,49 @@
     "ask": "Would you be open to a quick chat? I would be happy to share a few ideas made just for {company}.",
     "signoff": "Talk soon,\nAlex",
     "dm_template": "Hi {first}, I admire what you are building at {company}, {dm_clause}. I am Alex, a brand strategist who helps founder led AI {dm_sector} companies sharpen their story and stand out. Open to a quick chat?",
-    "dm_sector_words": { "health": "healthcare", "edu": "education", "work": "education" }
+    "dm_sector_words": {
+      "health": "healthcare",
+      "edu": "education",
+      "work": "education"
+    }
   },
   "business_sheet": [
-    ["Name", "Alex Morgan — Example Strategy Co"],
-    ["Offer", "Marketing, brand strategy, and PR for founder led companies: positioning, go to market, launch content, and press."],
-    ["Target customer", "Funded, founder led AI companies in healthcare and education, post POC through early growth."],
-    ["Location", "New York, US"],
-    ["Language", "english"],
-    ["Links", "https://example.com · alex@example-strategy.co"],
-    ["Value prop", "15+ years in marketing and brand strategy for high-growth companies"],
-    ["Value prop", "Turns complex ideas into clear messaging that customers, investors, and the press understand"]
+    [
+      "Name",
+      "Alex Morgan — Example Strategy Co"
+    ],
+    [
+      "Offer",
+      "Marketing, brand strategy, and PR for founder led companies: positioning, go to market, launch content, and press."
+    ],
+    [
+      "Target customer",
+      "Funded, founder led AI companies in healthcare and education, post POC through early growth."
+    ],
+    [
+      "Location",
+      "New York, US"
+    ],
+    [
+      "Language",
+      "english"
+    ],
+    [
+      "Links",
+      "https://example.com · alex@example-strategy.co"
+    ],
+    [
+      "Value prop",
+      "15+ years in marketing and brand strategy for high-growth companies"
+    ],
+    [
+      "Value prop",
+      "Turns complex ideas into clear messaging that customers, investors, and the press understand"
+    ]
   ],
-  "exclude_companies": ["Aidoc", "Cleerly", "SchoolAI"]
+  "exclude_companies": [
+    "Aidoc",
+    "Cleerly",
+    "SchoolAI"
+  ]
 }

@@ -9,7 +9,6 @@ import { discoverCandidates, verifyCompany, refuteRecord, personalize, findLinke
 import { validateLead, validateCopy, validateBatch } from './qa.js';
 import { buildLead } from './drafter.js';
 import { exportXlsx, exportCsv } from './export.js';
-import { applySignals } from './signal.js';
 
 // Profile mode: buyer-profile-driven B2B prospecting with grounded verification.
 //   node src/profile/run.js ../profiles/example.json --count 25
@@ -167,7 +166,7 @@ async function main() {
     });
   }
 
-  const leads = applySignals(ckpt.accepted.slice(0, args.count));
+  const leads = ckpt.accepted.slice(0, args.count);
   if (!leads.length) {
     console.error(chalk.red('\nNo leads survived QA — nothing exported.'));
     process.exit(1);

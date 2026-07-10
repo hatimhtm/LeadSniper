@@ -240,14 +240,12 @@ buyer profile (JSON: ICP + voice + exclusions)
   with logged reasons.
 - **Deterministic voice** — greeting/intro/sector-line/ask/signoff come verbatim from
   the profile JSON; the model only writes the personalized fragments, which are QA'd.
-- **Signal scoring** — every lead is ranked Hot / Warm / Steady from its evidence
-  (live site announcement, raise recency, server-confirmed mailbox, war chest) and
-  the sheet ships sorted hottest-first, with a "What's happening now" column making
-  the intent visible.
-- **Client-ready file** — company names hyperlink to their homepages, a Funding column
-  shows round + amount at a glance, the profile's brand icon is embedded in the
-  title block, and a Report sheet summarizes sector mix, signal bands, and
-  verification stats for the end client. A `.audit.json` ships next to every export: per-lead verification
+- **Live-intent column** — a "What's happening now" column surfaces each prospect's
+  freshest site announcement in the sheet, and the outreach is timed around it.
+- **Client-ready file** — company names and LinkedIn URLs are clickable, a Funding
+  column shows round + amount at a glance, the profile's brand icon + clickable brand
+  link sit in the title block alongside the delivering agent's name and description,
+  and a Report sheet summarizes sector mix and verification stats for the end client. A `.audit.json` ships next to every export: per-lead verification
   evidence (sources, dates, SMTP status, site news) so results are reviewable without
   re-research.
 - **Checkpointed** — reruns resume the same day's progress; delivered companies are
