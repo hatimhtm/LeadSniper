@@ -4,7 +4,7 @@
 // 3. The exporter output must match the expected delivery structure.
 import fs from 'node:fs';
 import { validateLead, validateCopy, validateBatch } from './src/profile/qa.js';
-import { buildLead } from './src/profile/drafter.js';
+import { buildLead, normalizeTitle } from './src/profile/drafter.js';
 import { exportXlsx, exportCsv } from './src/profile/export.js';
 
 const profile = JSON.parse(fs.readFileSync(new URL('../profiles/example.json', import.meta.url), 'utf8'));
@@ -36,6 +36,9 @@ const bads = [
   ['bad linkedin', { ...good, linkedin: 'https://www.linkedin.com/company/aidoc' }],
   ['missing hook', { ...good, hook: '' }],
   ['funding without numbers', { ...good, funding: 'well funded' }],
+  ['unicorn valuation', { ...good, valuation_musd: 3500 }],
+  ['over-raised incumbent', { ...good, total_raised_musd: 404 }],
+  ['public company', { ...good, is_public: true }],
   ['dead MX domain', { ...good, email: 'elad@aidoc-no-such-domain-xyz123.com', website_domain: 'aidoc-no-such-domain-xyz123.com' }],
 ];
 
@@ -83,6 +86,16 @@ const fresh = { ...assembled, company: 'FreshCo Health' };
 t('batch rejects already-delivered company (Aidoc)', !validateBatch([assembled], profile).pass);
 t('batch accepts clean set', validateBatch([fresh], profile).pass);
 
+// polish: title normalization
+t('normalizes "and" to "&" and Co-founder casing', normalizeTitle('CEO and Co-Founder') === 'CEO & Co-founder');
+t('buildLead applies title normalization', buildLead({ ...good, title: 'ceo and co-founder' }, fragments, profile).title === 'CEO & Co-founder');
+
+// batch dedupe: same person or same email across different companies
+const dupPerson = { ...assembled, company: 'OtherCo', email: 'elad@otherco.com', website_domain: 'otherco.com' };
+t('batch rejects duplicate contact across companies', !validateBatch([{ ...assembled, company: 'FreshCo A' }, { ...dupPerson, company: 'FreshCo B' }], profile).pass);
+const dupEmail = { ...assembled, company: 'FreshCo C', contact_name: 'Someone Else' };
+t('batch rejects duplicate email', !validateBatch([{ ...assembled, company: 'FreshCo A' }, dupEmail], profile).pass);
+
 // exporter structure check
 const outX = '/tmp/test-profile-export.xlsx';
 assembled.site_news = 'Launched Foo 2.0';
@@ -93,7 +106,7 @@ const ExcelJS = (await import('exceljs')).default;
 const wb = new ExcelJS.Workbook();
 await wb.xlsx.readFile(outX);
 const ws = wb.getWorksheet('Leads');
-t('xlsx has Leads + Report + Business sheets', wb.worksheets.map((w) => w.name).join() === 'Leads,Report,Business');
+t('cover sheet is first: Read me first, Leads, Business', wb.worksheets.map((w) => w.name).join() === 'Read me first,Leads,Business');
 t('title block merged and branded', ws.getCell('B1').isMerged && ws.getCell('A3').value.text === profile.brand);
 t('header row matches 15-col layout', JSON.stringify(ws.getRow(4).values.slice(1)) === JSON.stringify(['#','Company','Contact','Role','Category','Funding','Location','Email','LinkedIn','Niche',"What's happening now",'Why they fit','Email subject','Email outreach','DM opener']));
 t('frozen at row 4', ws.views[0].ySplit === 4 && ws.views[0].state === 'frozen');
@@ -107,8 +120,15 @@ t('linkedin cell is a clickable hyperlink', liCell && liCell.hyperlink === 'http
 const brandCell = ws.getCell('A3').value;
 t('brand cell is a clickable hyperlink', brandCell && brandCell.hyperlink === profile.brand_url);
 t('title block carries agent line', JSON.stringify(ws.getCell('B1').value).includes(profile.agent.name));
-t('report sheet has no Signal row', ![...Array(12)].some((_, i) => wb.getWorksheet('Report').getCell(`A${i+1}`).value === 'Signal'));
-t('report sheet names the agent', wb.getWorksheet('Report').getCell('A2').value === 'Agent');
+const cover = wb.getWorksheet('Read me first');
+const coverLabels = [...Array(14)].map((_, i) => cover.getCell(`A${i + 1}`).value).filter(Boolean);
+t('cover explains what this is', coverLabels.includes('What this is'));
+t('cover names the delivering agent', coverLabels.includes('Delivered by') && String(cover.getCell('B6').value).includes(profile.agent.name));
+t('cover states the email standard', coverLabels.includes('Our email standard') && String(cover.getCell('B8').value).includes('0 rejected'));
+t('cover carries verified-as-of date', coverLabels.includes('Verified as of'));
+const moreRow = coverLabels.indexOf('Find more agents');
+t('cover links back to the brand', moreRow >= 0 && cover.getCell(`B${moreRow + 5 - coverLabels.indexOf('What this is')}`).value.hyperlink === profile.brand_url);
+t('cover has no Signal mention', !coverLabels.includes('Signal'));
 const csv = fs.readFileSync(outC, 'utf8');
 t('csv mirrors table', csv.startsWith('#,Company,Contact') && csv.includes('elad@aidoc.com'));
 

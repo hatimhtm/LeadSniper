@@ -242,10 +242,17 @@ buyer profile (JSON: ICP + voice + exclusions)
   the profile JSON; the model only writes the personalized fragments, which are QA'd.
 - **Live-intent column** — a "What's happening now" column surfaces each prospect's
   freshest site announcement in the sheet, and the outreach is timed around it.
-- **Client-ready file** — company names and LinkedIn URLs are clickable, a Funding
-  column shows round + amount at a glance, the profile's brand icon + clickable brand
-  link sit in the title block alongside the delivering agent's name and description,
-  and a Report sheet summarizes sector mix and verification stats for the end client. A `.audit.json` ships next to every export: per-lead verification
+- **Emerging-stage caps** — optional `icp.stage_caps` in the profile (max valuation,
+  max total raised) are enforced in discovery, verification, and QA, so a buyer
+  paying for "emerging leaders" never receives unicorns or public incumbents.
+- **Client-ready file** — opens on a branded "Read me first" cover (what the list is,
+  the delivering agent, how it was verified, the email standard, the numbers);
+  company names and LinkedIn URLs are clickable, a Funding column shows round +
+  amount at a glance, and the brand icon + clickable brand link sit in the title
+  block alongside the agent's name and description.
+- **Batch hygiene** — duplicate companies, duplicate contacts, duplicate emails, and
+  previously-delivered companies are all batch-level hard rejects; titles are
+  normalized to one consistent style. A `.audit.json` ships next to every export: per-lead verification
   evidence (sources, dates, SMTP status, site news) so results are reviewable without
   re-research.
 - **Checkpointed** — reruns resume the same day's progress; delivered companies are

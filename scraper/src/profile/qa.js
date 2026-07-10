@@ -142,6 +142,21 @@ export async function validateLead(lead, profile, { checkMx = true, checkSmtp = 
     reasons.push(`funding has no numbers: ${lead.funding}`);
   }
 
+  // emerging-stage caps: a paid best-of list for an "emerging leader" buyer
+  // must not carry unicorns, public companies, or mega-raised incumbents
+  const caps = profile.icp?.stage_caps;
+  if (caps) {
+    if (lead.is_public === true) {
+      reasons.push('publicly traded — past emerging stage');
+    }
+    if (typeof lead.valuation_musd === 'number' && lead.valuation_musd >= caps.max_valuation_musd) {
+      reasons.push(`valuation $${lead.valuation_musd}M is at/above the $${caps.max_valuation_musd}M emerging-stage cap`);
+    }
+    if (typeof lead.total_raised_musd === 'number' && lead.total_raised_musd > caps.max_total_raised_musd) {
+      reasons.push(`total raised $${lead.total_raised_musd}M exceeds the $${caps.max_total_raised_musd}M emerging-stage cap`);
+    }
+  }
+
   for (const [k, v] of Object.entries(lead)) {
     if (typeof v === 'string' && PLACEHOLDER_RE.test(v)) {
       reasons.push(`placeholder text in ${k}: "${v.slice(0, 60)}"`);
@@ -215,12 +230,20 @@ export function validateCopy(lead, profile) {
 export function validateBatch(leads, profile) {
   const reasons = [];
   const seen = new Set();
+  const seenPeople = new Set();
+  const seenEmails = new Set();
   const excluded = new Set((profile.exclude_companies || []).map(normalize));
   for (const L of leads) {
     const key = normalize(L.company);
     if (seen.has(key)) reasons.push(`duplicate company: ${L.company}`);
     seen.add(key);
     if (excluded.has(key)) reasons.push(`excluded company slipped through: ${L.company}`);
+    const person = normalize(L.contact_name);
+    if (person && seenPeople.has(person)) reasons.push(`duplicate contact: ${L.contact_name}`);
+    seenPeople.add(person);
+    const email = normalize(L.email);
+    if (email && seenEmails.has(email)) reasons.push(`duplicate email: ${L.email}`);
+    seenEmails.add(email);
   }
   return { pass: reasons.length === 0, reasons };
 }

@@ -25,9 +25,14 @@
       "generic dev shops, app development agencies, consultancies",
       "accelerators, coworking spaces, university programs, nonprofits",
       "companies acquired or absorbed into a parent",
-      "companies whose founder is no longer in the leadership seat"
+      "companies whose founder is no longer in the leadership seat",
+      "publicly traded companies and unicorns valued at $1B or more"
     ],
-    "examples": []
+    "examples": [],
+    "stage_caps": {
+      "max_total_raised_musd": 250,
+      "max_valuation_musd": 1000
+    }
   },
   "voice": {
     "greeting": "Hey {first}, how are you? I hope all is good these days.",

@@ -1,9 +1,10 @@
 import ExcelJS from 'exceljs';
 import fs from 'node:fs';
 
-// Writes the client deliverable: styled "Leads" sheet
-// (merged title block, brand cell, frozen header) plus a "Business" sheet
-// describing the sender, and a CSV mirror of the table.
+// Writes the client deliverable: a "Read me first" cover sheet (what this is,
+// who delivered it, how it was built, the email standard, the numbers), the
+// styled "Leads" table, and a "Business" sheet describing the sender — plus an
+// optional CSV mirror of the table.
 
 const GREEN = 'FF30A050';
 const GREEN_TXT = 'FF107030';
@@ -23,6 +24,12 @@ const greenFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } 
 
 export async function exportXlsx(leads, profile, outPath, date, { iconPath = null } = {}) {
   const wb = new ExcelJS.Workbook();
+  const imgId = iconPath && fs.existsSync(iconPath)
+    ? wb.addImage({ filename: iconPath, extension: 'png' })
+    : null;
+
+  addCoverSheet(wb, leads, date, profile, imgId);
+
   const ws = wb.addWorksheet('Leads', {
     views: [{ state: 'frozen', ySplit: 4, showGridLines: false }],
   });
@@ -36,10 +43,9 @@ export async function exportXlsx(leads, profile, outPath, date, { iconPath = nul
     for (let c = 2; c <= LAST_COL; c++) ws.getRow(r).getCell(c).fill = greenFill;
   }
 
-  if (iconPath && fs.existsSync(iconPath)) {
-    const img = wb.addImage({ filename: iconPath, extension: 'png' });
+  if (imgId !== null) {
     // sits in the A1:A2 pocket above the brand name in A3
-    ws.addImage(img, { tl: { col: 0.15, row: 0.1 }, ext: { width: 58, height: 58 } });
+    ws.addImage(imgId, { tl: { col: 0.15, row: 0.1 }, ext: { width: 58, height: 58 } });
   }
   const title = ws.getCell('B1');
   // rich text so the agent line reads as a distinct, lighter subtitle
@@ -99,8 +105,6 @@ export async function exportXlsx(leads, profile, outPath, date, { iconPath = nul
     });
   });
 
-  addReportSheet(wb, leads, date, profile);
-
   const b = wb.addWorksheet('Business', { views: [{ showGridLines: false }] });
   b.getColumn(1).width = 22;
   b.getColumn(2).width = 100;
@@ -129,10 +133,13 @@ export async function exportXlsx(leads, profile, outPath, date, { iconPath = nul
   await wb.xlsx.writeFile(outPath);
 }
 
-function addReportSheet(wb, leads, date, profile) {
-  const r = wb.addWorksheet('Report', { views: [{ showGridLines: false }] });
-  r.getColumn(1).width = 30;
-  r.getColumn(2).width = 90;
+// The buyer's first impression: a one-page branded brief that says what the
+// file is, who produced it, how the data was verified, and the standard the
+// emails were held to. Replaces the old stats-only Report tab.
+function addCoverSheet(wb, leads, date, profile, imgId) {
+  const r = wb.addWorksheet('Read me first', { views: [{ showGridLines: false }] });
+  r.getColumn(1).width = 26;
+  r.getColumn(2).width = 96;
 
   const n = leads.length;
   const bySector = { health: 0, edu: 0, work: 0 };
@@ -147,31 +154,38 @@ function addReportSheet(wb, leads, date, profile) {
     if (L.email_smtp === 'deliverable') smtpOk += 1;
     if (L.email_smtp === 'accept-all') acceptAll += 1;
   }
+  const inconclusive = n - smtpOk - acceptAll;
 
-  const rows = [];
-  if (profile.agent?.name) {
-    rows.push(['Agent', `${profile.agent.name} — ${profile.agent.description || ''}`]);
+  // banner
+  r.mergeCells('A1:B3');
+  for (let i = 1; i <= 3; i++) r.getRow(i).height = 25.5;
+  const banner = r.getCell('A1');
+  banner.value = {
+    richText: [
+      { font: font({ size: 15, bold: true, color: { argb: 'FFFFFFFF' } }), text: `${profile.name}\n` },
+      { font: font({ size: 11, color: { argb: 'FFFFFFFF' } }), text: `Lead list  ·  ${n} verified leads  ·  ${date}` },
+    ],
+  };
+  banner.fill = greenFill;
+  banner.alignment = { horizontal: imgId !== null ? 'center' : 'left', vertical: 'middle', wrapText: true };
+  if (imgId !== null) {
+    r.addImage(imgId, { tl: { col: 0.12, row: 0.15 }, ext: { width: 62, height: 62 } });
   }
-  rows.push(
-    ['Leads delivered', `${n} — every one verified as of ${date}`],
-    ['Sector mix', `${bySector.health || 0} healthcare · ${bySector.edu || 0} education · ${bySector.work || 0} workforce learning`],
-    ['Live announcements', `${news} of ${n} have something new on their site right now — referenced in their outreach`],
-    ['Fresh capital', `${freshRaise} of ${n} raised within the last 12 months`],
-    ['Email quality', `${published} publicly documented · ${n - published} built from the company's documented format`],
-    ['Mailbox verification', `${smtpOk} server-confirmed deliverable · ${acceptAll} accept-all domains · ${n - smtpOk - acceptAll} inconclusive · 0 rejected`],
-  );
 
-  const title = r.getCell('A1');
-  r.mergeCells('A1:B1');
-  title.value = `Lead list report  ·  ${date}`;
-  title.font = font({ size: 13, bold: true, color: { argb: 'FFFFFFFF' } });
-  title.fill = greenFill;
-  title.alignment = { vertical: 'middle' };
-  r.getRow(1).height = 25.5;
+  const rows = [
+    ['What this is', `${n} verified decision-makers matching your buyer profile, each with a personalized email and LinkedIn message ready to send. Companies are grouped by sector; every column that names a company or person links straight to their site or profile.`],
+    ['Delivered by', profile.agent?.name
+      ? `${profile.agent.name} — ${profile.agent.description || ''}`
+      : profile.brand],
+    ['How it was built', 'Each company was discovered against the buyer profile, verified through live web research (founder still in the seat, independent, actively operating, emerging stage), checked a second time by an adversarial pass that hunts for quiet acquisitions and leadership changes, and its website was read the same day to time the outreach around what is happening right now.'],
+    ['Our email standard', `Every address is the contact's direct email — publicly documented or built from the company's documented format — and checked against the company's own mail server. An address a server rejects never ships: ${smtpOk} of ${n} are server-confirmed deliverable, ${acceptAll} sit on accept-all domains (format-verified), ${inconclusive} inconclusive, 0 rejected.`],
+    ['The numbers', `${bySector.health || 0} healthcare · ${bySector.edu || 0} education · ${bySector.work || 0} workforce learning — ${news} with a live announcement on their site right now, ${freshRaise} funded within the last 12 months.`],
+    ['Verified as of', date],
+  ];
 
   rows.forEach(([k, v], i) => {
-    const row = r.getRow(i + 2);
-    row.height = 32;
+    const row = r.getRow(i + 5);
+    row.height = k === 'Verified as of' ? 24 : 60;
     row.getCell(1).value = k;
     row.getCell(1).font = font({ size: 10, bold: true, color: { argb: GREEN_TXT } });
     row.getCell(1).alignment = { vertical: 'top', wrapText: true };
@@ -179,6 +193,17 @@ function addReportSheet(wb, leads, date, profile) {
     row.getCell(2).font = font({ size: 10, color: { argb: DARK } });
     row.getCell(2).alignment = { vertical: 'top', wrapText: true };
   });
+
+  if (profile.brand_url) {
+    const linkRow = r.getRow(rows.length + 5);
+    linkRow.height = 24;
+    linkRow.getCell(1).value = 'Find more agents';
+    linkRow.getCell(1).font = font({ size: 10, bold: true, color: { argb: GREEN_TXT } });
+    linkRow.getCell(1).alignment = { vertical: 'top' };
+    linkRow.getCell(2).value = { text: profile.brand_url.replace(/^https?:\/\//, ''), hyperlink: profile.brand_url };
+    linkRow.getCell(2).font = font({ size: 10, color: { argb: DARK }, underline: true });
+    linkRow.getCell(2).alignment = { vertical: 'top' };
+  }
 }
 
 // 1 -> A, 2 -> B, ... (small helper; export tables never exceed 26 columns)

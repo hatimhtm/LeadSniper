@@ -33,9 +33,21 @@ function stripTrailingPeriod(s) {
   return (s || '').trim().replace(/\.+$/, '');
 }
 
+// Polish: consistent title style across every row ("CEO and Co-Founder" →
+// "CEO & Co-founder"). Word order is never touched — only casing and ampersands.
+export function normalizeTitle(title) {
+  return (title || '')
+    .replace(/\s+/g, ' ')
+    .replace(/\band\b/gi, '&')
+    .replace(/co[-\s]?founder/gi, 'Co-founder')
+    .replace(/\bceo\b/gi, 'CEO')
+    .trim();
+}
+
 export function buildLead(record, fragments, profile) {
   return {
     ...record,
+    title: normalizeTitle(record.title),
     category: fragments.category,
     why: fragments.why,
     subject: fragments.subject,

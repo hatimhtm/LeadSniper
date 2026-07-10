@@ -69,6 +69,15 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Renders the buyer profile's emerging-stage cap as a prompt line ('' if unset).
+function stageCapLine(profile) {
+  const caps = profile.icp?.stage_caps;
+  if (!caps) return '';
+  const val = caps.max_valuation_musd >= 1000
+    ? `$${caps.max_valuation_musd / 1000}B` : `$${caps.max_valuation_musd}M`;
+  return `\nSTAGE CAP — emerging-stage only: privately held, valuation under ${val}, total raised under $${caps.max_total_raised_musd}M. No public companies, no unicorns, no IPO-track giants.\n`;
+}
+
 export async function discoverCandidates(config, profile, count, extraExclude = []) {
   const exclude = [...new Set([...(profile.exclude_companies || []), ...extraExclude])];
   const sectors = Object.entries(profile.icp.sectors)
@@ -84,7 +93,7 @@ ${sectors}
 
 BAD FIT — never include:
 ${profile.icp.bad_fit.map((b) => `- ${b}`).join('\n')}
-
+${stageCapLine(profile)}
 DO NOT include any of these companies (already used):
 ${exclude.join(', ')}
 
@@ -117,9 +126,10 @@ Answer these questions:
 7. One plain-English sentence (~15 words) describing what they do.
 8. One specific 2025-2026 trigger event (raise, launch, partnership, milestone) usable to personalize outreach.
 9. Best DIRECT email for the contact. Priority: (a) an address the person shared publicly (press release, podcast page, their own post) — mark "published"; (b) an address constructed from the company's documented email format (RocketReach/LeadIQ/SignalHire format pages, masked-address hints) — mark "pattern" and name the pattern; (c) nothing found — mark "none" and leave email empty. NEVER return generic inboxes (info@, hello@, support@, sales@, contact@) and NEVER invent a placeholder.
-
+10. Company stage: best-estimate TOTAL raised to date in $M, latest known valuation in $M (null if undisclosed), and whether the company is publicly traded.${stageCapLine(profile) ? ' If the company is publicly traded, valued at or above the stage cap, or has raised beyond the cap, set ok:false with reason "past emerging stage".' : ''}
+${stageCapLine(profile)}
 Return ONLY a JSON object:
-{"ok": true/false, "reason": "only if false", "company": "official short name", "sector": "${candidate.sector}", "contact_name": "", "first_name": "", "title": "", "linkedin": "", "location": "", "funding": "", "website_domain": "", "niche": "", "hook": "", "email": "", "email_source": "published|pattern|none", "email_evidence": "where the address or pattern was documented"}`;
+{"ok": true/false, "reason": "only if false", "company": "official short name", "sector": "${candidate.sector}", "contact_name": "", "first_name": "", "title": "", "linkedin": "", "location": "", "funding": "", "total_raised_musd": number or null, "valuation_musd": number or null, "is_public": true/false, "website_domain": "", "niche": "", "hook": "", "email": "", "email_source": "published|pattern|none", "email_evidence": "where the address or pattern was documented"}`;
 
   const { text, grounded } = await callGeminiGrounded(config.gemini_api_key, config.gemini_model, prompt);
   if (!grounded) return { ok: false, reason: 'verification was not search-grounded', company: candidate.company };
@@ -152,11 +162,14 @@ Return ONLY a JSON object: {"linkedin": "https://www.linkedin.com/in/..." or ""}
 // Adversarial second pass: a fresh grounded call whose only job is to disprove the
 // record. This is what catches quiet acquisitions and CEO departures.
 export async function refuteRecord(config, record) {
+  const ident = record.website_domain
+    ? `the company operating at ${record.website_domain}`
+    : `"${record.company}"`;
   const prompt = `Today is ${today()}. Try to DISPROVE the following claims using Google Search. Look specifically for: acquisition or merger news at any date, the person leaving or being replaced in the role, company shutdown or pivot, or the person's name being associated with a DIFFERENT company in this role.
 
-CLAIMS:
-- "${record.contact_name}" is currently ${record.title} at "${record.company}".
-- "${record.company}" is an independent, active company.
+CLAIMS (about ${ident} ONLY — several unrelated companies may share the name "${record.company}"; evidence about a same-named company at a different domain does NOT refute these claims):
+- "${record.contact_name}" is currently ${record.title} at "${record.company}" (${record.website_domain || 'domain unknown'}).
+- "${record.company}" (${record.website_domain || 'domain unknown'}) is an independent, active company.
 
 Search for: "${record.company} acquired", "${record.company} CEO", "${record.contact_name}".
 
