@@ -78,12 +78,39 @@ function stageCapLine(profile) {
   return `\nSTAGE CAP — emerging-stage only: privately held, valuation under ${val}, total raised under $${caps.max_total_raised_musd}M. No public companies, no unicorns, no IPO-track giants.\n`;
 }
 
+// LeadSniper handles two prospect classes. 'funded_startup' (default)
+// verifies funding/founder-CEO/stage. 'dtc_store' verifies platform,
+// active-store, traction, and a reachable founder/store email — no funding.
+function leadType(profile) {
+  return profile.lead_type || 'funded_startup';
+}
+
 export async function discoverCandidates(config, profile, count, extraExclude = []) {
   const exclude = [...new Set([...(profile.exclude_companies || []), ...extraExclude])];
+  const sectorKeys = Object.keys(profile.icp.sectors).join('|');
   const sectors = Object.entries(profile.icp.sectors)
     .map(([k, v]) => `- ${k}: ${v}`).join('\n');
+  const bad = profile.icp.bad_fit.map((b) => `- ${b}`).join('\n');
 
-  const prompt = `Today is ${today()}. You are sourcing B2B prospects. Use Google Search — do not rely on memory.
+  const prompt = leadType(profile) === 'dtc_store'
+    ? `Today is ${today()}. You are sourcing ecommerce prospects for a service provider. Use Google Search — do not rely on memory.
+
+IDEAL CUSTOMER PROFILE:
+${profile.icp.summary}
+
+Product verticals to spread across (use these keys):
+${sectors}
+
+BAD FIT — never include:
+${bad}
+
+DO NOT include any of these brands (already used):
+${exclude.join(', ')}
+
+Find ${count} DISTINCT ecommerce brands that fit. STRONGLY prefer brands that have appeared on Shark Tank (US) or Dragons' Den (UK) — they are the best-fit signal. Otherwise pick clearly established, founder-run Shopify/DTC brands with visible traction (thousands of reviews, notable press, large social following) in English-speaking markets (US, UK, AU, CA). Avoid huge/mass-market incumbents past the founder-run SMB stage, and avoid dead or non-English stores.
+
+Return ONLY a JSON array of objects: {"company": "brand name", "sector": "${sectorKeys}", "signal": "one line: what they sell + the standout signal (e.g. 'Shark Tank S14, sells oat-milk skincare, 40k+ reviews')"}`
+    : `Today is ${today()}. You are sourcing B2B prospects. Use Google Search — do not rely on memory.
 
 IDEAL CUSTOMER PROFILE:
 ${profile.icp.summary}
@@ -92,14 +119,14 @@ Sectors (use these keys):
 ${sectors}
 
 BAD FIT — never include:
-${profile.icp.bad_fit.map((b) => `- ${b}`).join('\n')}
+${bad}
 ${stageCapLine(profile)}
 DO NOT include any of these companies (already used):
 ${exclude.join(', ')}
 
 Find ${count} DISTINCT companies that fit, spread across the sectors, each verifiably active and independent (not acquired) as of ${today()}. Prefer companies with a 2025-2026 trigger event: fresh funding round, major launch, big partnership, or expansion.
 
-Return ONLY a JSON array of objects: {"company": "...", "sector": "health|edu|work", "signal": "one line on why they fit, with the recent trigger event"}`;
+Return ONLY a JSON array of objects: {"company": "...", "sector": "${sectorKeys}", "signal": "one line on why they fit, with the recent trigger event"}`;
 
   const { text, grounded } = await callGeminiGrounded(config.gemini_api_key, config.gemini_model, prompt, { temperature: 0.6 });
   if (!grounded) throw new Error('Discovery response was not search-grounded');
@@ -114,7 +141,26 @@ Return ONLY a JSON array of objects: {"company": "...", "sector": "health|edu|wo
 }
 
 export async function verifyCompany(config, profile, candidate) {
-  const prompt = `Today is ${today()}. Verify facts about the company "${candidate.company}" (${candidate.signal || 'no context'}) using Google Search. Do NOT answer from memory — every people-fact must be confirmed by a current source.
+  const prompt = leadType(profile) === 'dtc_store'
+    ? dtcVerifyPrompt(candidate)
+    : fundedVerifyPrompt(profile, candidate);
+
+  const { text, grounded } = await callGeminiGrounded(config.gemini_api_key, config.gemini_model, prompt);
+  if (!grounded) return { ok: false, reason: 'verification was not search-grounded', company: candidate.company };
+  try {
+    const rec = parseJsonLenient(text);
+    rec.sector = rec.sector || candidate.sector;
+    rec.verified_on = today();
+    // DTC founder/store profiles rarely carry funding — never let a blank block QA
+    if (leadType(profile) === 'dtc_store' && !rec.funding) rec.funding = 'Private / self-funded';
+    return rec;
+  } catch (err) {
+    return { ok: false, reason: `unparseable verification: ${err.message}`, company: candidate.company };
+  }
+}
+
+function fundedVerifyPrompt(profile, candidate) {
+  return `Today is ${today()}. Verify facts about the company "${candidate.company}" (${candidate.signal || 'no context'}) using Google Search. Do NOT answer from memory — every people-fact must be confirmed by a current source.
 
 Answer these questions:
 1. Is the company independent and active as of ${today()}? (Not acquired, merged, or shut down. An acquisition at ANY point disqualifies it.)
@@ -130,17 +176,25 @@ Answer these questions:
 ${stageCapLine(profile)}
 Return ONLY a JSON object:
 {"ok": true/false, "reason": "only if false", "company": "official short name", "sector": "${candidate.sector}", "contact_name": "", "first_name": "", "title": "", "linkedin": "", "location": "", "funding": "", "total_raised_musd": number or null, "valuation_musd": number or null, "is_public": true/false, "website_domain": "", "niche": "", "hook": "", "email": "", "email_source": "published|pattern|none", "email_evidence": "where the address or pattern was documented"}`;
+}
 
-  const { text, grounded } = await callGeminiGrounded(config.gemini_api_key, config.gemini_model, prompt);
-  if (!grounded) return { ok: false, reason: 'verification was not search-grounded', company: candidate.company };
-  try {
-    const rec = parseJsonLenient(text);
-    rec.sector = rec.sector || candidate.sector;
-    rec.verified_on = today();
-    return rec;
-  } catch (err) {
-    return { ok: false, reason: `unparseable verification: ${err.message}`, company: candidate.company };
-  }
+function dtcVerifyPrompt(candidate) {
+  return `Today is ${today()}. Verify facts about the ecommerce brand "${candidate.company}" (${candidate.signal || 'no context'}) using Google Search. Do NOT answer from memory — every fact must be confirmed by a current source. Be honest: a private brand's exact revenue is usually NOT public — use verifiable proxies (TV appearance, review counts, press, following), never invent a revenue number.
+
+Answer these questions:
+1. Is this an ACTIVE ecommerce store still run by its founder as of ${today()}? (Store is live and selling, not shut down or in liquidation, not fully bought out / absorbed into a large parent.) A MINORITY investment — a Shark Tank or Dragons' Den deal, or angel/seed funding where the founder keeps control — is FINE and is a positive signal, not a disqualifier. Only a full buyout, shutdown, or founder exit sets ok:false.
+2. What ecommerce platform does the store run on? Confirm it is Shopify (or a comparable DTC platform like WooCommerce/BigCommerce) from real signals (cdn.shopify.com, myshopify, builtwith-style evidence). If it is clearly NOT a self-serve DTC platform (e.g. Amazon-only, marketplace-only), ok:false. Put the platform in "platform".
+3. Who is the FOUNDER or OWNER? Full name and role ("Founder" / "Co-founder" / "Owner"). Confirm they still run the brand. A named founder is required — if none can be confirmed, ok:false.
+4. Locality: city + country, and confirm it serves an English-speaking market (US, UK, AU, CA). If the brand is primarily non-English, ok:false.
+5. Standout signal — the credibility/traction proxy, in priority order: Shark Tank (US) or Dragons' Den (UK) appearance (name the season/year if known); else notable press; else visible traction (e.g. "38,000+ reviews", "260k Instagram followers"). One short phrase.
+6. Website domain (bare, e.g. "brand.com").
+7. What they sell — one plain sentence (~12 words).
+8. Instagram profile URL if the brand has one (that is where DTC founders live); LinkedIn URL only if easily found.
+9. Best reachable email. A STORE or FOUNDER inbox is acceptable for this buyer: prefer the founder's direct email if documented ("published"); else the store's real contact address or the founder's name @ the brand domain, built from documented format ("pattern"); else "none". It MUST be on the brand's own domain (not gmail/marketplace). Name where it was found in "email_evidence".
+10. Email-marketing angle — one specific, concrete reason this brand's email likely underperforms or an opening to pitch (e.g. "big new launch to promote to their list", "high traffic but no visible welcome offer", "strong social but generic post-purchase flow"). Put it in "angle".
+
+Return ONLY a JSON object:
+{"ok": true/false, "reason": "only if false", "company": "brand name", "sector": "${candidate.sector}", "contact_name": "founder full name", "first_name": "", "title": "Founder|Co-founder|Owner", "platform": "", "location": "", "standout": "", "linkedin": "", "social": "instagram url or ''", "website_domain": "", "niche": "what they sell", "hook": "the standout signal or a current promo", "angle": "", "email": "", "email_source": "published|pattern|none", "email_evidence": ""}`;
 }
 
 // Focused fallback when the verify pass finds everything except the LinkedIn URL —
@@ -161,17 +215,25 @@ Return ONLY a JSON object: {"linkedin": "https://www.linkedin.com/in/..." or ""}
 
 // Adversarial second pass: a fresh grounded call whose only job is to disprove the
 // record. This is what catches quiet acquisitions and CEO departures.
-export async function refuteRecord(config, record) {
+export async function refuteRecord(config, record, profile = {}) {
   const ident = record.website_domain
     ? `the company operating at ${record.website_domain}`
     : `"${record.company}"`;
-  const prompt = `Today is ${today()}. Try to DISPROVE the following claims using Google Search. Look specifically for: acquisition or merger news at any date, the person leaving or being replaced in the role, company shutdown or pivot, or the person's name being associated with a DIFFERENT company in this role.
+  // For DTC brands a minority investment (a Shark Tank / Dragons' Den deal, an
+  // angel/seed round) is the BEST signal, not a disqualifier — only a full
+  // buyout, shutdown, or founder exit should refute. For funded startups any
+  // acquisition disqualifies.
+  const disqualifiers = leadType(profile) === 'dtc_store'
+    ? `the store being closed, dead, or in liquidation; a FULL acquisition or buyout (change of control, absorbed into a parent company); or the founder having fully exited the business. IMPORTANT: a MINORITY investment — a Shark Tank or Dragons' Den deal, or angel/seed funding where the founder keeps control — is NOT a disqualifier and must NOT be treated as an acquisition or loss of independence.`
+    : `acquisition or merger news at any date, the person leaving or being replaced in the role, company shutdown or pivot, or the person's name being associated with a DIFFERENT company in this role.`;
+
+  const prompt = `Today is ${today()}. Try to DISPROVE the following claims using Google Search. Look specifically for: ${disqualifiers}
 
 CLAIMS (about ${ident} ONLY — several unrelated companies may share the name "${record.company}"; evidence about a same-named company at a different domain does NOT refute these claims):
 - "${record.contact_name}" is currently ${record.title} at "${record.company}" (${record.website_domain || 'domain unknown'}).
-- "${record.company}" (${record.website_domain || 'domain unknown'}) is an independent, active company.
+- "${record.company}" (${record.website_domain || 'domain unknown'}) is an active company still run by its founder.
 
-Search for: "${record.company} acquired", "${record.company} CEO", "${record.contact_name}".
+Search for: "${record.company} acquired", "${record.company} closed", "${record.contact_name}".
 
 Return ONLY a JSON object: {"refuted": true/false, "reason": "the contrary evidence if refuted, else empty"}`;
 
@@ -204,8 +266,8 @@ export async function siteIntel(config, profile, record) {
 Their offer, in short: ${profile.business_sheet?.find((r) => r[0] === 'Offer')?.[1] || 'brand, positioning, and PR strategy'}.
 
 Below is the CURRENT homepage text of ${record.company} (${record.website_domain}), a prospect. Read it and extract:
-1. whats_new: the single freshest concrete thing the site is announcing right now (a launch, a new model/product, a partnership, a milestone). One sentence, specific. Empty string if nothing clearly new.
-2. opportunity: the INSIGHT — given what is new, what does this company likely NEED right now that the provider sells? Think one step past the announcement: a major launch usually means their positioning, website, story, and press push need to catch up with the product. One sentence, specific to this company. Never generic filler.
+1. whats_new: the single freshest concrete thing the site is announcing right now (a launch, a new product, a sale/promo, a partnership, a milestone). One sentence, specific. Empty string if nothing clearly new.
+2. opportunity: the INSIGHT — think one step past the announcement: given what is new, what does this company now NEED that the provider's service directly addresses? One sentence, specific to this company, framed around the provider's offer above. Never generic filler.
 3. evidence: the exact site phrase that supports whats_new (short quote).
 
 Use ONLY the homepage text. Never invent announcements.
@@ -270,10 +332,16 @@ async function callGeminiJson(config, prompt, temperature = 0.7) {
 // what the verified record and site intel already contain.
 export async function personalize(config, profile, record, intel = null) {
   const intelBlock = intel
-    ? `\nFresh from their homepage TODAY:\n- What's new: ${intel.whats_new || 'n/a'}\n- The opportunity this creates: ${intel.opportunity || 'n/a'}`
+    ? `\nFresh from their site TODAY:\n- What's new: ${intel.whats_new || 'n/a'}\n- The opening this creates: ${intel.opportunity || 'n/a'}`
     : '';
+  const prompt = leadType(profile) === 'dtc_store'
+    ? dtcPersonalizePrompt(record, intelBlock)
+    : fundedPersonalizePrompt(record, intelBlock);
+  return callGeminiJson(config, prompt, 0.7);
+}
 
-  const prompt = `You write outreach copy fragments in a specific voice. Warm, plain, confident. No hype words (revolutionary, game-changing, cutting-edge), no em dashes, no exclamation marks. Keep years, dollar amounts, and counts as numerals (2026, $101M, 2,000 hospitals) — never spell them out. Never invent facts — use ONLY the facts given.
+function fundedPersonalizePrompt(record, intelBlock) {
+  return `You write outreach copy fragments in a specific voice. Warm, plain, confident. No hype words (revolutionary, game-changing, cutting-edge), no em dashes, no exclamation marks. Keep years, dollar amounts, and counts as numerals (2026, $101M, 2,000 hospitals) — never spell them out. Never invent facts — use ONLY the facts given.
 
 FACTS:
 Company: ${record.company}
@@ -299,8 +367,37 @@ Write for ${record.company}. Return ONLY a JSON object:
  "p2": "2 sentences: sincere specific praise referencing what they do plus the freshest concrete event",
  "closer": "1 sentence turning the current moment into why a clear story pays off now",
  "dm_clause": "short clause completing 'I admire what you are building at ${record.company}, ...'"}`;
+}
 
-  return callGeminiJson(config, prompt, 0.7);
+function dtcPersonalizePrompt(record, intelBlock) {
+  return `You write cold-outreach copy fragments for an ecommerce email-marketing specialist reaching out to Shopify/DTC founders. Voice: warm, plain, peer-to-peer, genuinely admiring of their brand. No hype words, no em dashes, no exclamation marks, no jargon. Never invent facts — use ONLY the facts given. Never claim to know their revenue.
+
+FACTS:
+Brand: ${record.company}
+What they sell: ${record.niche}
+Standout signal: ${record.standout || record.hook}
+Locality: ${record.location}
+Email-marketing angle (why their email could do more): ${record.angle || 'their email flows are likely under-used'}${intelBlock}
+
+Reference fragments in the target voice:
+- p2: "I came across Fizzy Goblet and the shoes are gorgeous, no surprise the store gets the traffic it does. Brands with a following like yours usually have a lot more revenue sitting in their email than they realise."
+- closer: "If your welcome and post-purchase flows are not pulling their weight yet, that is usually the fastest money in ecommerce to go and get."
+- dm_clause: "the brand you have built and the loyal following behind it"
+- subject: "quick idea for Fizzy Goblet's email"
+
+RULES:
+- p2 must give sincere, specific praise about THIS brand (reference what they sell and the standout signal), then gently note the email upside. Warm, never salesy.
+- closer must turn the specific angle into a light, concrete reason email is worth a look now. Never promise revenue figures.
+- "why" is for a 'Why they fit' column: name the platform/traction proxy and the concrete email opportunity (this is the buyer's "why this brand").
+- subject must be lowercase-casual and under 55 chars, mentioning the brand.
+
+Write for ${record.company}. Return ONLY a JSON object:
+{"category": "2-4 word product vertical like 'Footwear DTC' or 'Skincare brand'",
+ "why": "one sentence: platform + standout/traction proxy + the concrete email opportunity",
+ "subject": "casual email subject under 55 chars, names the brand",
+ "p2": "2 sentences: specific admiring praise about the brand plus a gentle nod to the email upside",
+ "closer": "1 sentence turning the angle into a light reason to look at email now",
+ "dm_clause": "short clause completing 'I love what you have built at ${record.company}, ...'"}`;
 }
 
 export function logStep(msg) {

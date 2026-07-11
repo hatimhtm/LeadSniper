@@ -1,0 +1,189 @@
+{
+  "slug": "example-dtc",
+  "name": "Alex Rivera — Ecommerce Email Studio",
+  "brand": "leadsniper",
+  "brand_url": "https://example.com",
+  "lead_type": "dtc_store",
+  "agent": {
+    "name": "LeadSniper",
+    "description": "an AI prospecting agent that finds founder-run Shopify brands, verifies each store and a reachable email, and drafts the outreach in your voice."
+  },
+  "icp": {
+    "summary": "Founder-run ecommerce / DTC brands on Shopify (or similar) that are actively selling in English-speaking markets (US, UK, AU, CA), established enough to be doing real revenue with real website traffic, and would benefit from stronger Klaviyo email marketing. The standout signal is brands that have appeared on Shark Tank (US) or Dragons' Den (UK). Founder-led SMB brands, not mass-market incumbents.",
+    "sectors": {
+      "beauty": "beauty, skincare, cosmetics, personal care",
+      "food": "food, drink, supplements, wellness consumables",
+      "apparel": "apparel, footwear, accessories, jewelry",
+      "home": "home, kitchen, pets, lifestyle products"
+    },
+    "buyer_roles": [
+      "Founder",
+      "Co-founder",
+      "Owner",
+      "Co-owner"
+    ],
+    "bad_fit": [
+      "non-English-speaking brands or markets",
+      "stores with no real products, revenue, or traffic",
+      "marketplace-only sellers (Amazon/Etsy only) with no real DTC store",
+      "huge mass-market incumbents past the founder-run SMB stage",
+      "dropshippers and cheap price-only stores",
+      "brands that are dead, dormant, or acquired into a large parent"
+    ],
+    "examples": [],
+    "require_funding": false,
+    "require_linkedin": false,
+    "allow_role_email": true
+  },
+  "voice": {
+    "greeting": "Hey {first}, how are you? I hope business is good these days.",
+    "intro": "I am Alex, an ecommerce email specialist who turns Shopify email into a real revenue channel, handling the flows, campaigns, and copy end to end so founders do not have to.",
+    "sector_lines": {
+      "beauty": "Most Shopify brands I meet are leaving real money in their email, usually in the welcome, abandoned cart, and post-purchase flows that quietly run in the background. I set those up properly and write campaigns that sound like your brand, so email becomes a channel you can count on without you having to manage it.",
+      "food": "Most Shopify brands I meet are leaving real money in their email, usually in the welcome, abandoned cart, and post-purchase flows that quietly run in the background. I set those up properly and write campaigns that sound like your brand, so email becomes a channel you can count on without you having to manage it.",
+      "apparel": "Most Shopify brands I meet are leaving real money in their email, usually in the welcome, abandoned cart, and post-purchase flows that quietly run in the background. I set those up properly and write campaigns that sound like your brand, so email becomes a channel you can count on without you having to manage it.",
+      "home": "Most Shopify brands I meet are leaving real money in their email, usually in the welcome, abandoned cart, and post-purchase flows that quietly run in the background. I set those up properly and write campaigns that sound like your brand, so email becomes a channel you can count on without you having to manage it."
+    },
+    "ask": "Would you be open to a quick look? I would happily map out a couple of flows made just for {company} so you can see what is there.",
+    "signoff": "Talk soon,\nAlex",
+    "dm_template": "Hi {first}, I love what you have built at {company}, {dm_clause}. I am Alex, an email specialist who helps founder-run Shopify brands turn their email into a real revenue channel, handled for you. Open to a quick look?",
+    "dm_sector_words": {
+      "beauty": "ecommerce",
+      "food": "ecommerce",
+      "apparel": "ecommerce",
+      "home": "ecommerce"
+    }
+  },
+  "columns": [
+    {
+      "header": "#",
+      "key": "num",
+      "width": 12
+    },
+    {
+      "header": "Brand",
+      "key": "company",
+      "width": 22,
+      "link": "website"
+    },
+    {
+      "header": "Founder",
+      "key": "contact_name",
+      "width": 20
+    },
+    {
+      "header": "Role",
+      "key": "title",
+      "width": 14
+    },
+    {
+      "header": "Category",
+      "key": "category",
+      "width": 20,
+      "wrap": true
+    },
+    {
+      "header": "Platform",
+      "key": "platform",
+      "width": 14
+    },
+    {
+      "header": "Standout signal",
+      "key": "standout",
+      "width": 30,
+      "wrap": true
+    },
+    {
+      "header": "Locality",
+      "key": "location",
+      "width": 18,
+      "wrap": true
+    },
+    {
+      "header": "Email",
+      "key": "email",
+      "width": 28
+    },
+    {
+      "header": "Social",
+      "key": "social",
+      "width": 30,
+      "link": "self"
+    },
+    {
+      "header": "What they sell",
+      "key": "niche",
+      "width": 34,
+      "wrap": true
+    },
+    {
+      "header": "What's happening now",
+      "key": "site_news",
+      "width": 34,
+      "wrap": true,
+      "dash": true
+    },
+    {
+      "header": "Why they fit",
+      "key": "why",
+      "width": 42,
+      "wrap": true
+    },
+    {
+      "header": "Email subject",
+      "key": "subject",
+      "width": 28,
+      "wrap": true
+    },
+    {
+      "header": "Email outreach",
+      "key": "email_outreach",
+      "width": 72,
+      "wrap": true
+    },
+    {
+      "header": "DM opener",
+      "key": "dm",
+      "width": 50,
+      "wrap": true
+    }
+  ],
+  "cover": {
+    "what_this_is": "25 founder-run Shopify brands matching your buyer profile, each with the founder, a reachable email, a standout signal, a clear reason their email could do more, and a personalized email and DM ready to send."
+  },
+  "business_sheet": [
+    [
+      "Name",
+      "Alex Rivera — Ecommerce Email Studio"
+    ],
+    [
+      "Offer",
+      "Done-for-you ecommerce email marketing: flows, campaigns, copy, and strategy that turn email into a real revenue channel."
+    ],
+    [
+      "Target customer",
+      "Founder-run Shopify / DTC brands actively selling in English-speaking markets, that want results without meetings."
+    ],
+    [
+      "Location",
+      "Works with English-speaking brands (UK, US, AU, CA)"
+    ],
+    [
+      "Language",
+      "english"
+    ],
+    [
+      "Links",
+      "https://example.com · alex@example-email.co"
+    ],
+    [
+      "Value prop",
+      "Specialized in ecommerce email marketing"
+    ],
+    [
+      "Value prop",
+      "Handles flows, campaigns, copy, and strategy end to end"
+    ]
+  ],
+  "exclude_companies": []
+}

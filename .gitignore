@@ -12,5 +12,6 @@ tsconfig.tsbuildinfo
 runs/
 profiles/*
 !profiles/example.json
+!profiles/example-dtc.json
 data.db
 *.db

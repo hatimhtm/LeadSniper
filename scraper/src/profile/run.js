@@ -111,13 +111,16 @@ async function main() {
         return;
       }
 
-      // salvage pass: verify often finds everything except the LinkedIn URL
-      if (!/linkedin\.com\/in\//.test(rec.linkedin || '')) {
+      // salvage pass: verify often finds everything except the LinkedIn URL.
+      // Only worth a grounded call when the profile actually requires LinkedIn
+      // (funded startups do; DTC stores treat it as optional).
+      const needsLinkedin = profile.icp?.require_linkedin ?? !profile.lead_type;
+      if (needsLinkedin && !/linkedin\.com\/in\//.test(rec.linkedin || '')) {
         rec.linkedin = await findLinkedIn(config, rec);
       }
 
       if (args.refute) {
-        const ref = await refuteRecord(config, rec);
+        const ref = await refuteRecord(config, rec, profile);
         if (ref.refuted) {
           ckpt.rejected.push({ company: rec.company, stage: 'refute', reasons: [ref.reason] });
           console.log(`${tag} ${chalk.red('✗ refuted:')} ${ref.reason}`);

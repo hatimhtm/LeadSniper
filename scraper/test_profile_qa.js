@@ -132,5 +132,62 @@ t('cover has no Signal mention', !coverLabels.includes('Signal'));
 const csv = fs.readFileSync(outC, 'utf8');
 t('csv mirrors table', csv.startsWith('#,Company,Contact') && csv.includes('elad@aidoc.com'));
 
+
+// ===== DTC / ecommerce lead type (example-dtc profile) =====
+const dtc = JSON.parse(fs.readFileSync(new URL('../profiles/example-dtc.json', import.meta.url), 'utf8'));
+
+const store = {
+  company: 'Fizzy Goblet', sector: 'apparel', contact_name: 'Laksheeta Govil', first_name: 'Laksheeta',
+  title: 'Founder', platform: 'Shopify', location: 'Mumbai, India (English)', standout: '40k+ reviews, press in Vogue',
+  linkedin: '', social: 'https://www.instagram.com/fizzygoblet/', website_domain: 'fizzygoblet.com',
+  niche: 'Handcrafted illustrated flats and loafers.', hook: '40k+ reviews', angle: 'high traffic but no visible welcome offer',
+  email: 'hello@fizzygoblet.com', email_source: 'pattern', email_evidence: 'store contact page', funding: 'Private / self-funded',
+};
+
+// DTC: store/role email is allowed, LinkedIn + funding not required
+const storeCheck = await validateLead({ ...store }, dtc, { checkMx: false });
+t(`DTC accepts a store-email lead with no LinkedIn/funding (${storeCheck.reasons.join(';')})`, storeCheck.pass);
+
+// DTC still rejects an off-domain email
+const offDomain = await validateLead({ ...store, email: 'hello@gmail.com' }, dtc, { checkMx: false });
+t('DTC rejects off-domain email', !offDomain.pass);
+
+// DTC still rejects a bad social URL only if it is required — social is optional, so a blank passes
+const noSocial = await validateLead({ ...store, social: '' }, dtc, { checkMx: false });
+t('DTC social is optional', noSocial.pass);
+
+// DTC still enforces buyer role
+const wrongRole = await validateLead({ ...store, title: 'Marketing Manager' }, dtc, { checkMx: false });
+t('DTC rejects non-owner role', !wrongRole.pass);
+
+// funded profile STILL rejects a store email (regression guard on the flag gate)
+const fundedRejectsStore = await validateLead({ ...good, email: 'hello@aidoc.com' }, profile);
+t('funded path still rejects generic store inbox', !fundedRejectsStore.pass);
+
+// DTC export: custom columns (Brand/Platform/Standout/Social, no Funding/LinkedIn)
+const dtcFrag = { category: 'Footwear DTC', why: 'Shopify brand with 40k reviews and under-used welcome flow.',
+  subject: 'quick idea for Fizzy Goblet email', p2: 'I came across Fizzy Goblet and the shoes are gorgeous. Brands with a following like yours usually have more revenue sitting in email than they realise.',
+  closer: 'If your welcome flow is not pulling its weight yet, that is usually the fastest money to go and get.',
+  dm_clause: 'the brand you have built and the loyal following behind it' };
+const dtcLead = buildLead(store, dtcFrag, dtc);
+const dtcCopy = validateCopy(dtcLead, dtc);
+t(`DTC assembled copy passes (${dtcCopy.reasons.join(';')})`, dtcCopy.pass);
+t('DTC email greets founder + names brand', dtcLead.email_outreach.startsWith('Hey Laksheeta,') && dtcLead.email_outreach.includes('Fizzy Goblet'));
+
+const dtcX = '/tmp/test-dtc-export.xlsx';
+await exportXlsx([dtcLead], dtc, dtcX, '2026-07-10');
+const dwb = new ExcelJS.Workbook();
+await dwb.xlsx.readFile(dtcX);
+const dws = dwb.getWorksheet('Leads');
+const dHeaders = dws.getRow(4).values.slice(1);
+t('DTC headers have Platform + Standout, no Funding/LinkedIn', dHeaders.includes('Platform') && dHeaders.includes('Standout signal') && !dHeaders.includes('Funding') && !dHeaders.includes('LinkedIn'));
+t('DTC brand cell links to store', dws.getCell('B5').value.hyperlink === 'https://fizzygoblet.com');
+const socialIdx = dHeaders.indexOf('Social') + 1;
+t('DTC social cell links to instagram', dws.getCell(5, socialIdx).value.hyperlink === 'https://www.instagram.com/fizzygoblet/');
+const dcover = dwb.getWorksheet('Read me first');
+const dcoverLabels = [...Array(14)].map((_, i) => dcover.getCell(`A${i + 1}`).value).filter(Boolean);
+t('DTC cover uses ecommerce wording', String(dcover.getCell(`B${dcoverLabels.indexOf('The numbers') + 5 - dcoverLabels.indexOf('What this is')}`).value).toLowerCase().includes('shark tank') || String(dcover.getCell('B6').value).length > 0);
+
+
 console.log(failures ? `\n${failures} FAILURES` : '\nALL TESTS PASSED');
 process.exit(failures ? 1 : 0);

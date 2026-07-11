@@ -258,6 +258,25 @@ buyer profile (JSON: ICP + voice + exclusions)
 - **Checkpointed** — reruns resume the same day's progress; delivered companies are
   registered per-profile and auto-excluded from future runs.
 
+### `/// TWO PROSPECT CLASSES (ICP-AGNOSTIC)`
+
+Profile mode is not hard-wired to funded startups. A profile's `lead_type` selects
+the verification recipe, and a handful of flags reshape the gates and the sheet, so
+the same rigor covers very different buyers:
+
+| | `funded_startup` (default) | `dtc_store` |
+|---|---|---|
+| **Verifies** | founder-CEO in seat, funding round, stage caps | active founder-run store, Shopify/platform, English market, traction |
+| **Standout signal** | fresh raise / launch / partnership | Shark Tank / Dragons' Den appearance, reviews, press |
+| **Email** | the person's direct address | founder OR store inbox (`allow_role_email`) |
+| **LinkedIn / Funding** | required | optional (`require_linkedin` / `require_funding` false) |
+| **"Acquired" means** | any acquisition disqualifies | only a full buyout / founder exit — a minority Shark Tank / Dragons' Den deal is a *positive* |
+| **Columns** | Funding · LinkedIn · Niche | Platform · Standout · Social · What they sell |
+
+Everything else — grounded discovery, the adversarial refute pass, homepage
+intent, the SMTP email standard, the cover sheet, hyperlinks, the audit trail — is
+shared. A new buyer is a new `profiles/<name>.json`, not new code.
+
 ```bash
 cd scraper
 npm run profile -- ../profiles/example.json --count 25

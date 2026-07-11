@@ -14,10 +14,33 @@ const GENERIC_LOCALS = new Set([
 
 const PLACEHOLDER_RE = /\[[^\]]*\]|domain\.com|example\.com|founder name|your name|placeholder|\bTODO\b|XXX/i;
 
-const REQUIRED_FIELDS = [
-  'company', 'contact_name', 'title', 'linkedin', 'location', 'niche', 'hook',
-  'email', 'website_domain', 'sector', 'funding',
+// Fields every lead needs regardless of ICP. Funding/LinkedIn are conditional
+// (funded startups require them; DTC stores do not) — added per-profile below.
+const BASE_REQUIRED_FIELDS = [
+  'company', 'contact_name', 'title', 'location', 'niche', 'hook',
+  'email', 'website_domain', 'sector',
 ];
+
+// Profile flags default to the funded-startup behavior, so an old profile with
+// none of these keys validates exactly as before. An explicit true/false in the
+// profile always wins (?? only falls back when the key is absent).
+function flags(profile) {
+  const icp = profile.icp || {};
+  const fundedDefault = !profile.lead_type; // funded path requires funding + LinkedIn
+  return {
+    requireFunding: icp.require_funding ?? fundedDefault,
+    requireLinkedin: icp.require_linkedin ?? fundedDefault,
+    allowRoleEmail: icp.allow_role_email === true,
+  };
+}
+
+function requiredFields(profile) {
+  const f = flags(profile);
+  const fields = [...BASE_REQUIRED_FIELDS];
+  if (f.requireFunding) fields.push('funding');
+  if (f.requireLinkedin) fields.push('linkedin');
+  return fields;
+}
 
 function normalize(s) {
   return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -132,13 +155,14 @@ export async function smtpProbe(email, { timeoutMs = 12000 } = {}) {
 // Validates one verified+personalized lead. Returns { pass, reasons[] }.
 export async function validateLead(lead, profile, { checkMx = true, checkSmtp = false } = {}) {
   const reasons = [];
+  const f = flags(profile);
 
-  for (const f of REQUIRED_FIELDS) {
-    if (!lead[f] || !String(lead[f]).trim()) reasons.push(`missing field: ${f}`);
+  for (const field of requiredFields(profile)) {
+    if (!lead[field] || !String(lead[field]).trim()) reasons.push(`missing field: ${field}`);
   }
 
-  // funding must carry actual numbers ("$126M, 2025"), not vibes.
-  if (lead.funding && !/\d/.test(String(lead.funding))) {
+  // funded startups: funding must carry actual numbers ("$126M, 2025"), not vibes.
+  if (f.requireFunding && lead.funding && !/\d/.test(String(lead.funding))) {
     reasons.push(`funding has no numbers: ${lead.funding}`);
   }
 
@@ -169,9 +193,14 @@ export async function validateLead(lead, profile, { checkMx = true, checkSmtp = 
       reasons.push(`malformed email: ${email}`);
     } else {
       const local = email.split('@')[0].replace(/[^a-z]/g, '');
-      if (GENERIC_LOCALS.has(local)) reasons.push(`generic inbox: ${email}`);
-      if (!emailMatchesName(email, lead.contact_name)) {
-        reasons.push(`email does not match contact name: ${lead.contact_name} <> ${email}`);
+      // DTC buyers accept a store/role inbox (hello@brand.com is a real, reachable
+      // address); funded-startup outreach must hit the person, so both the
+      // generic-inbox and name-match checks apply only when role email is off.
+      if (!f.allowRoleEmail) {
+        if (GENERIC_LOCALS.has(local)) reasons.push(`generic inbox: ${email}`);
+        if (!emailMatchesName(email, lead.contact_name)) {
+          reasons.push(`email does not match contact name: ${lead.contact_name} <> ${email}`);
+        }
       }
       if (!domainsRelated(email.split('@')[1], lead.website_domain)) {
         reasons.push(`email domain does not match company domain: ${email} <> ${lead.website_domain}`);
@@ -188,8 +217,13 @@ export async function validateLead(lead, profile, { checkMx = true, checkSmtp = 
     }
   }
 
-  if (!/^https:\/\/(www|[a-z]{2})\.linkedin\.com\/in\/[A-Za-z0-9\-_%.]+\/?$/.test(String(lead.linkedin || ''))) {
-    reasons.push(`bad LinkedIn URL: ${lead.linkedin}`);
+  // LinkedIn: required + format-checked for funded; for DTC it is optional, but a
+  // present value must still be a real profile URL.
+  const li = String(lead.linkedin || '');
+  if (f.requireLinkedin || li) {
+    if (!/^https:\/\/(www|[a-z]{2})\.linkedin\.com\/in\/[A-Za-z0-9\-_%.]+\/?$/.test(li)) {
+      reasons.push(`bad LinkedIn URL: ${lead.linkedin}`);
+    }
   }
 
   const roleOk = (profile.icp.buyer_roles || []).some((r) =>

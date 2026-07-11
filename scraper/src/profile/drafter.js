@@ -48,6 +48,7 @@ export function buildLead(record, fragments, profile) {
   return {
     ...record,
     title: normalizeTitle(record.title),
+    email: String(record.email || '').trim().toLowerCase(),
     category: fragments.category,
     why: fragments.why,
     subject: fragments.subject,
