@@ -18,7 +18,7 @@ async function callGeminiGrounded(apiKey, model, prompt, { temperature = 0.2 } =
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           tools: [{ google_search: {} }],
-          generationConfig: { temperature, maxOutputTokens: 8192 },
+          generationConfig: { temperature, maxOutputTokens: 32768 },
         }),
         signal: AbortSignal.timeout(120000),
       });
@@ -53,14 +53,57 @@ async function callGeminiGrounded(apiKey, model, prompt, { temperature = 0.2 } =
 }
 
 function parseJsonLenient(text) {
-  const cleaned = text.replace(/^```(?:json)?\s*/im, '').replace(/```\s*$/m, '');
-  const start = Math.min(...['{', '['].map((c) => {
-    const i = cleaned.indexOf(c);
-    return i === -1 ? Infinity : i;
-  }));
-  if (start === Infinity) throw new Error('No JSON found in response');
-  const end = Math.max(cleaned.lastIndexOf('}'), cleaned.lastIndexOf(']'));
-  return JSON.parse(cleaned.slice(start, end + 1));
+  // Grounded Gemini responses have several failure shapes: prose before the
+  // fence, raw control chars inside strings, and — worst — a TRUNCATED first
+  // ```json block immediately followed by a complete regenerated copy. So:
+  // collect every fenced chunk, try them last-first (the regenerated copy is
+  // the complete one), then fall back to bracket-scanning the whole text.
+  const fenced = [...text.matchAll(/```(?:json)?\s*([\s\S]*?)(?=```|$)/g)]
+    .map((m) => m[1])
+    .filter((c) => c && /[{[]/.test(c));
+  const candidates = [...fenced.reverse(), text];
+
+  let lastErr = new Error('No JSON found in response');
+  for (const cleaned of candidates) {
+    const start = Math.min(...['{', '['].map((c) => {
+      const i = cleaned.indexOf(c);
+      return i === -1 ? Infinity : i;
+    }));
+    if (start === Infinity) continue;
+    const end = Math.max(cleaned.lastIndexOf('}'), cleaned.lastIndexOf(']'));
+    const body = cleaned.slice(start, end + 1);
+    try {
+      return JSON.parse(body);
+    } catch (err) {
+      lastErr = err;
+    }
+    try {
+      // raw control chars are only legal between tokens — space-replacing
+      // them never corrupts valid JSON
+      return JSON.parse(body.replace(/[\x00-\x1f]/g, ' '));
+    } catch (err) {
+      lastErr = err;
+    }
+    // hard-truncated array (thinking ate the output budget): salvage every
+    // complete element and drop the cut-off one
+    if (body.startsWith('[')) {
+      const cut = body.lastIndexOf('}');
+      if (cut > 0) {
+        const salvaged = body.slice(0, cut + 1) + ']';
+        try {
+          return JSON.parse(salvaged);
+        } catch (err) {
+          lastErr = err;
+        }
+        try {
+          return JSON.parse(salvaged.replace(/[\x00-\x1f]/g, ' '));
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+    }
+  }
+  throw lastErr;
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -128,9 +171,22 @@ Find ${count} DISTINCT companies that fit, spread across the sectors, each verif
 
 Return ONLY a JSON array of objects: {"company": "...", "sector": "${sectorKeys}", "signal": "one line on why they fit, with the recent trigger event"}`;
 
-  const { text, grounded } = await callGeminiGrounded(config.gemini_api_key, config.gemini_model, prompt, { temperature: 0.6 });
-  if (!grounded) throw new Error('Discovery response was not search-grounded');
-  const list = parseJsonLenient(text);
+  // discovery output is long free-form JSON from a grounded call — parse
+  // failures are stochastic (stray prose, broken fences), so retry fresh
+  let list;
+  let lastErr;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { text, grounded } = await callGeminiGrounded(config.gemini_api_key, config.gemini_model, prompt, { temperature: 0.6 });
+    if (!grounded) { lastErr = new Error('Discovery response was not search-grounded'); continue; }
+    try {
+      list = parseJsonLenient(text);
+      break;
+    } catch (err) {
+      lastErr = err;
+      try { (await import('node:fs')).writeFileSync(`/tmp/leadsniper-discovery-fail-${Date.now()}.txt`, text); } catch { /* diagnostics only */ }
+    }
+  }
+  if (!list) throw lastErr;
   const seen = new Set(exclude.map((c) => c.toLowerCase()));
   return list.filter((c) => {
     const key = (c.company || '').toLowerCase().trim();

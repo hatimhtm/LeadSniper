@@ -120,10 +120,15 @@ export async function exportXlsx(leads, profile, outPath, date, { iconPath = nul
     });
   });
 
+  // Orders without sender details (e.g. marketplace briefs) skip the Business sheet
+  if (!profile.business_sheet?.length) {
+    await wb.xlsx.writeFile(outPath);
+    return;
+  }
   const b = wb.addWorksheet('Business', { views: [{ showGridLines: false }] });
   b.getColumn(1).width = 22;
   b.getColumn(2).width = 100;
-  const rows = [['About the business (sender)', null], ...(profile.business_sheet || [])];
+  const rows = [[profile.business_sheet_title || 'About the business (sender)', null], ...profile.business_sheet];
   rows.forEach(([k, v], i) => {
     const row = b.getRow(i + 1);
     const ck = row.getCell(1);
