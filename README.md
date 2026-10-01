@@ -6,21 +6,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hatimhtm/LeadSniper/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/hatimhtm/LeadSniper/ci.yml?branch=main&style=for-the-badge&label=CI&labelColor=1A1A1A&color=CCFF00" alt="CI" /></a>
-  <img src="https://img.shields.io/badge/Next.js-14-1A1A1A?style=for-the-badge&logo=nextdotjs&logoColor=CCFF00" alt="Next.js" />
-  <img src="https://img.shields.io/badge/TypeScript-5-1A1A1A?style=for-the-badge&logo=typescript&logoColor=CCFF00" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Supabase-1A1A1A?style=for-the-badge&logo=supabase&logoColor=CCFF00" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Playwright-1A1A1A?style=for-the-badge&logo=playwright&logoColor=CCFF00" alt="Playwright" />
-  <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-VIEW_ONLY-1A1A1A?style=for-the-badge&labelColor=1A1A1A&color=CCFF00" alt="View-only license" /></a>
+  <a href="https://github.com/hatimhtm/LeadSniper/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/hatimhtm/LeadSniper/ci.yml?style=flat-square&label=CI&branch=main&labelColor=14151A&color=2E4FD6" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/Next.js-14-2E4FD6?style=flat-square&logo=nextdotjs&logoColor=white&labelColor=14151A&color=2E4FD6" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5-2E4FD6?style=flat-square&logo=typescript&logoColor=white&labelColor=14151A&color=2E4FD6" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Supabase-2E4FD6?style=flat-square&logo=supabase&logoColor=white&labelColor=14151A&color=2E4FD6" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Playwright-2E4FD6?style=flat-square&logo=playwright&logoColor=white&labelColor=14151A&color=2E4FD6" alt="Playwright" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-VIEW_ONLY-2E4FD6?style=flat-square&labelColor=14151A&color=2E4FD6" alt="View-only license" /></a>
 </p>
 
 <p align="center">
   <em><strong>An AI lead-generation engine for freelancers.</strong> Hand it a niche + a city; it queries Google Places, crawls each lead's website with Playwright, scores them across 23 factors, drafts personalised outreach with Gemini, and streams everything into a Next.js dashboard backed by Supabase real-time. ~7k LOC across a CLI scraper + dashboard. Built for the freelance prospecting workflow I wished existed.</em>
 </p>
 
----
-
-### `/// THE LOOP`
+## The loop
 
 ```
             niche + city
@@ -52,7 +50,7 @@
                   │
                   ▼
    ┌─────────────────────────────┐
-   │ Gemini 2.5 Flash — drafts   │
+   │ Gemini 2.5 Flash - drafts   │
    │ per-channel (email · WA ·   │
    │ DM) personalised outreach   │
    └──────────────┬──────────────┘
@@ -65,33 +63,27 @@
    └─────────────────────────────┘
 ```
 
----
+## Why it exists
 
-### `/// WHY IT EXISTS`
-
-Cold outreach for freelance work usually breaks down at the same two places: **finding the right businesses** (the ones who actually need what you sell, not random names from a directory) and **writing the message** (anything generic gets ignored). LeadSniper attacks both. The 23-factor scoring surfaces leads where the gap is visible — slow site, no SSL, missing meta, no social, dated stack — and the AI drafter consumes that same signal so the message you send actually references what's wrong instead of saying "I'd love to chat."
+Cold outreach for freelance work usually breaks down at the same two places: **finding the right businesses** (the ones who actually need what you sell, not random names from a directory) and **writing the message** (anything generic gets ignored). LeadSniper attacks both. The 23-factor scoring surfaces leads where the gap is visible (slow site, no SSL, missing meta, no social, dated stack) and the AI drafter consumes that same signal so the message you send actually references what's wrong instead of saying "I'd love to chat."
 
 The scraper runs locally (Playwright + browser, your IP, your API keys). The dashboard runs anywhere (Vercel free tier). Supabase wires them together with real-time so you watch leads scoring live as the scraper crunches.
 
----
-
-### `/// HIGHLIGHTS`
+## Highlights
 
 | | |
 |---|---|
-| **23-factor scoring** | Web presence (has site, HTTPS, mobile-responsive), SEO (title, description, schema, sitemap), social (FB/IG/LinkedIn/X presence), Core Web Vitals (LCP, FID, CLS), credibility (Google rating, review count), engagement (last update, contact methods). Each factor is a 0–10 sub-score; weighted into a 0–100 opportunity score. |
-| **No-website logic** | A lead with no website gets the *maximum* score on every web factor — they're the customer who needs you most. Counter-intuitive but correct: a perfect 100/100 site doesn't need a developer. |
+| **23-factor scoring** | Web presence (has site, HTTPS, mobile-responsive), SEO (title, description, schema, sitemap), social (FB/IG/LinkedIn/X presence), Core Web Vitals (LCP, FID, CLS), credibility (Google rating, review count), engagement (last update, contact methods). Each factor is a 0-10 sub-score; weighted into a 0-100 opportunity score. |
+| **No-website logic** | A lead with no website gets the *maximum* score on every web factor: they're the customer who needs you most. Counter-intuitive but correct: a perfect 100/100 site doesn't need a developer. |
 | **Real-time pipeline** | The scraper writes to Supabase as each lead is processed; the dashboard subscribes via `postgres_changes` and streams rows in. No polling, no refresh button. |
 | **Multi-channel drafts** | Gemini drafts a `cold_email`, a `whatsapp_dm`, and a `linkedin_dm` per lead. Tone + service-type modifiers (gentle / direct / playful · website-build / SEO / ads). Regenerate any channel with custom prompt overrides. |
 | **Failover Google Places keys** | Supply two `GOOGLE_PLACES_API_KEY_1/2`; the scraper rotates on 429 / quota errors and logs failed runs back to Supabase so the dashboard shows the actual failure mode. |
 | **PageSpeed status-checked** | Calls `pagespeedonline/v5/runPagespeed` per lead with a 45s timeout. HTTP status is checked before JSON parse (avoids the silent crash on 4xx/5xx). |
 | **Watch mode** | `LeadSniper.command` (double-click) → scraper polls `ms_search_requests` every 30s. Click "New search" in the dashboard, it dispatches a request, your local machine processes it. The dashboard never needs to ship Playwright. |
 | **Resilient watch-mode polling** | Transient network errors (`TypeError`, `AbortError`, `ECONNRESET`, `ETIMEDOUT`, `ENOTFOUND`) are silently retried; only real errors hit the log. |
-| **Local-first + cloud-native** | Your IP, your keys, your data — Playwright runs on your machine, never in a hosted browser farm. Supabase holds the persistent state. |
+| **Local-first + cloud-native** | Your IP, your keys, your data: Playwright runs on your machine, never in a hosted browser farm. Supabase holds the persistent state. |
 
----
-
-### `/// 23-FACTOR SCORE BREAKDOWN`
+## 23-factor score breakdown
 
 ```
 Web presence          ━━━━━━━━━━ 4 factors   (has site, HTTPS, mobile, modern stack)
@@ -106,9 +98,7 @@ Contact / engagement  ━━━━━━━━━━ 4 factors   (email exposed,
 
 See `scraper/src/scorer.js` for the actual weighting.
 
----
-
-### `/// QUICK START`
+## Quick start
 
 ```bash
 git clone https://github.com/hatimhtm/LeadSniper.git
@@ -127,7 +117,7 @@ npm install
 npm run dev                # http://localhost:3000
 cd ..
 
-# 3) Scraper (separate terminal — keep it running)
+# 3) Scraper (separate terminal - keep it running)
 cd scraper
 npm install
 npx playwright install chromium
@@ -136,9 +126,7 @@ node src/index.js watch    # idles until you trigger a search from the dashboard
 
 Or double-click `LeadSniper.command` (macOS) to launch the scraper in watch mode.
 
----
-
-### `/// PROJECT STRUCTURE`
+## Project structure
 
 ```
 LeadSniper/
@@ -162,7 +150,7 @@ LeadSniper/
 │   │   ├── analyzer.js          PageSpeed Insights + tech-stack detection
 │   │   ├── scorer.js            23-factor scoring
 │   │   ├── ai-drafter.js        Gemini per-channel message drafting
-│   │   └── config.js            ENV_MAP — .env first, then ms_settings fallback
+│   │   └── config.js            ENV_MAP - .env first, then ms_settings fallback
 │   └── package.json
 ├── supabase/
 │   └── schema.sql               ms_leads · ms_searches · ms_search_requests ·
@@ -172,18 +160,14 @@ LeadSniper/
 └── .github/workflows/ci.yml     builds dashboard + lints scraper
 ```
 
----
-
-### `/// SECURITY & PRIVACY`
+## Security & privacy
 
 - **No secrets committed.** `.env` is gitignored; the public `.env.example` is the only env file in version control.
 - **API keys never leave your machine.** Google Places and Gemini are called from the local scraper, not from the dashboard. The dashboard only reads/writes Supabase.
 - **Anon key only.** Supabase URL + anon key are in the dashboard env; service-role key isn't used anywhere. RLS policies in `schema.sql` keep the data scoped to the authenticated user.
 - **Polite scraping.** Configurable `SCRAPER_DELAY_MIN`/`MAX` between Google Places calls, Playwright resource-blocking (no images/fonts), 2-retry with backoff, 30s page timeout.
 
----
-
-### `/// USAGE EXAMPLES`
+## Usage examples
 
 ```bash
 # One-shot scrape
@@ -195,13 +179,11 @@ node scraper/src/index.js "real estate" "Paris" --skip-crawl --skip-ai
 # Re-score existing leads in DB (after tweaking scorer.js)
 node scraper/src/index.js rescore
 
-# Watch mode — runs forever, polls the dashboard for queued searches
+# Watch mode - runs forever, polls the dashboard for queued searches
 node scraper/src/index.js watch --interval 30
 ```
 
----
-
-### `/// PROFILE MODE — B2B STARTUP HUNTING (2.1)`
+## Profile mode: B2B startup hunting (2.1)
 
 The Places pipeline above finds **local businesses**. Profile mode finds **funded,
 founder-led companies** matching a buyer profile (ICP), with verified people-facts.
@@ -221,44 +203,44 @@ buyer profile (JSON: ICP + voice + exclusions)
               role check) DISPROVE)   to template)
 ```
 
-- **Grounded or rejected** — responses without search-grounding metadata are discarded.
-- **Refute pass** — a second adversarial call per lead hunts for acquisitions, CEO
+- **Grounded or rejected**: responses without search-grounding metadata are discarded.
+- **Refute pass**: a second adversarial call per lead hunts for acquisitions, CEO
   departures, and shutdowns. (In testing it caught Workday/Sana, Handshake/Uplimit,
   Commure/Augmedix.)
-- **Site-intel insight** — fetches each lead's live homepage and extracts not just
+- **Site-intel insight**: fetches each lead's live homepage and extracts not just
   *what they're announcing* but *what that means they need next* (a fresh model
-  launch usually means positioning, site, and press have to catch up) — and the
+  launch usually means positioning, site, and press have to catch up), and the
   outreach references it.
-- **SMTP mailbox probe** — beyond MX records, the QA layer does an RCPT-TO handshake
+- **SMTP mailbox probe**: beyond MX records, the QA layer does an RCPT-TO handshake
   against the domain's mail server: explicit rejections kill the lead, accept-all
-  domains are flagged in the audit trail. (Inconclusive probes — port 25 blocked —
+  domains are flagged in the audit trail. (Inconclusive probes, port 25 blocked,
   never fail a lead on their own.)
-- **QA gates** (`profile/qa.js`) — placeholders, generic inboxes (`info@`…), emails
+- **QA gates** (`profile/qa.js`): placeholders, generic inboxes (`info@`…), emails
   that don't match the contact's name or the company's domain, dead-MX domains,
   SMTP-refused mailboxes, funding without numbers, non-buyer titles, malformed
   LinkedIn URLs, duplicates, and previously-delivered companies are all hard rejects
   with logged reasons.
-- **Deterministic voice** — greeting/intro/sector-line/ask/signoff come verbatim from
+- **Deterministic voice**: greeting/intro/sector-line/ask/signoff come verbatim from
   the profile JSON; the model only writes the personalized fragments, which are QA'd.
-- **Live-intent column** — a "What's happening now" column surfaces each prospect's
+- **Live-intent column**: a "What's happening now" column surfaces each prospect's
   freshest site announcement in the sheet, and the outreach is timed around it.
-- **Emerging-stage caps** — optional `icp.stage_caps` in the profile (max valuation,
+- **Emerging-stage caps**: optional `icp.stage_caps` in the profile (max valuation,
   max total raised) are enforced in discovery, verification, and QA, so a buyer
   paying for "emerging leaders" never receives unicorns or public incumbents.
-- **Client-ready file** — opens on a branded "Read me first" cover (what the list is,
+- **Client-ready file**: opens on a branded "Read me first" cover (what the list is,
   the delivering agent, how it was verified, the email standard, the numbers);
   company names and LinkedIn URLs are clickable, a Funding column shows round +
   amount at a glance, and the brand icon + clickable brand link sit in the title
   block alongside the agent's name and description.
-- **Batch hygiene** — duplicate companies, duplicate contacts, duplicate emails, and
+- **Batch hygiene**: duplicate companies, duplicate contacts, duplicate emails, and
   previously-delivered companies are all batch-level hard rejects; titles are
   normalized to one consistent style. A `.audit.json` ships next to every export: per-lead verification
   evidence (sources, dates, SMTP status, site news) so results are reviewable without
   re-research.
-- **Checkpointed** — reruns resume the same day's progress; delivered companies are
+- **Checkpointed**: reruns resume the same day's progress; delivered companies are
   registered per-profile and auto-excluded from future runs.
 
-### `/// TWO PROSPECT CLASSES (ICP-AGNOSTIC)`
+## Two prospect classes (ICP-agnostic)
 
 Profile mode is not hard-wired to funded startups. A profile's `lead_type` selects
 the verification recipe, and a handful of flags reshape the gates and the sheet, so
@@ -270,11 +252,11 @@ the same rigor covers very different buyers:
 | **Standout signal** | fresh raise / launch / partnership | Shark Tank / Dragons' Den appearance, reviews, press |
 | **Email** | the person's direct address | founder OR store inbox (`allow_role_email`) |
 | **LinkedIn / Funding** | required | optional (`require_linkedin` / `require_funding` false) |
-| **"Acquired" means** | any acquisition disqualifies | only a full buyout / founder exit — a minority Shark Tank / Dragons' Den deal is a *positive* |
+| **"Acquired" means** | any acquisition disqualifies | only a full buyout / founder exit: a minority Shark Tank / Dragons' Den deal is a *positive* |
 | **Columns** | Funding · LinkedIn · Niche | Platform · Standout · Social · What they sell |
 
-Everything else — grounded discovery, the adversarial refute pass, homepage
-intent, the SMTP email standard, the cover sheet, hyperlinks, the audit trail — is
+Everything else (grounded discovery, the adversarial refute pass, homepage
+intent, the SMTP email standard, the cover sheet, hyperlinks, the audit trail) is
 shared. A new buyer is a new `profiles/<name>.json`, not new code.
 
 ```bash
@@ -288,11 +270,9 @@ Needs only `GEMINI_API_KEY` (grounding via Google Search tool). Output lands on
 the Desktop as `<profile>-<date>-leads.xlsx` + `.csv`; rejects and their reasons
 are kept in `runs/<profile>/checkpoint-<date>.json`.
 
----
+## 2.0: polish pass
 
-### `/// 2.0 — POLISH PASS`
-
-- `.env.example` now lists every required var (Google Places × 2, Gemini, USER profile, scraper tuning) — was Supabase-only before.
+- `.env.example` now lists every required var (Google Places × 2, Gemini, USER profile, scraper tuning), was Supabase-only before.
 - `scraper/src/config.js`: extracted `ENV_MAP` constant (was duplicated between `getConfig` + `getAllConfig`).
 - `scraper/src/analyzer.js`: PageSpeed response now status-checked before `response.json()` (was a silent SyntaxError on 4xx/5xx).
 - `scraper/src/index.js` watch loop: transient network errors broadened beyond the brittle `'fetch'` substring check.
@@ -301,20 +281,18 @@ are kept in `runs/<profile>/checkpoint-<date>.json`.
 - `dashboard/src/components/dashboard/LeadCard.tsx`: `hover:scale-110` (imperceptible on 14px icons) → `hover:opacity-70` (consistent muted-feedback pattern).
 - New brutalist hero banner SVGs + README + CI workflow.
 
----
+## License
 
-### `/// LICENSE`
-
-[All Rights Reserved — Source-Visible](LICENSE).
+[All Rights Reserved: Source-Visible](LICENSE).
 
 This is **not** an open-source repository. The code is on GitHub for the
-limited purpose of letting you **read it** — evaluate the engineering,
+limited purpose of letting you **read it**, evaluate the engineering,
 study the 23-factor scoring, see how Playwright + Gemini + Supabase
 real-time fit together. That's it.
 
 **Not allowed:** running it, deploying it, copying it into another project,
 redistributing it, modifying it, sublicensing it, or commercially
-exploiting it — even for free. "Free" doesn't equal "permitted."
+exploiting it: even for free. "Free" doesn't equal "permitted."
 
 If you want a commercial licence or a custom LeadSniper-style build for
 your agency, [get in touch](mailto:hatimelhassak.official@gmail.com).
@@ -322,12 +300,8 @@ your agency, [get in touch](mailto:hatimelhassak.official@gmail.com).
 ---
 
 <p align="center">
-  <a href="https://hatimelhassak.is-a.dev"><img src="https://img.shields.io/badge/PORTFOLIO-1A1A1A?style=for-the-badge&logo=vercel&logoColor=CCFF00" alt="Portfolio" /></a>
-  <a href="https://cal.com/hatimelhassak/engineering-discovery"><img src="https://img.shields.io/badge/BOOK_A_CALL-CCFF00?style=for-the-badge&logo=googlecalendar&logoColor=1A1A1A" alt="Book a call" /></a>
-  <a href="https://www.linkedin.com/in/hatim-elhassak/"><img src="https://img.shields.io/badge/LINKEDIN-1A1A1A?style=for-the-badge&logo=linkedin&logoColor=CCFF00" alt="LinkedIn" /></a>
-  <a href="mailto:hatimelhassak.official@gmail.com"><img src="https://img.shields.io/badge/EMAIL-1A1A1A?style=for-the-badge&logo=gmail&logoColor=CCFF00" alt="Email" /></a>
-</p>
-
-<p align="center">
-  <code>///&nbsp;&nbsp;OPEN FOR NEW WORK&nbsp;&nbsp;///&nbsp;&nbsp;CONTRACT &amp; FREELANCE&nbsp;&nbsp;///&nbsp;&nbsp;REMOTE WORLDWIDE&nbsp;&nbsp;///</code>
+  <a href="https://hatimelhassak.is-a.dev">Portfolio</a> ·
+  <a href="https://cal.com/hatimelhassak/engineering-discovery">Book a call</a> ·
+  <a href="https://www.linkedin.com/in/hatim-elhassak/">LinkedIn</a> ·
+  <a href="mailto:hatimelhassak.official@gmail.com">Email</a>
 </p>

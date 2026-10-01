@@ -1,32 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-label="LeadSniper — AI lead-gen + outreach engine">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-label="LeadSniper: AI lead-gen + outreach engine">
   <defs>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1A1A1A" stroke-width="0.5" stroke-opacity="0.06"/>
-    </pattern>
+    <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="1090" cy="200" r="340"><stop offset="0" stop-color="#2E4FD6" stop-opacity=".13"/><stop offset="1" stop-color="#2E4FD6" stop-opacity="0"/></radialGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".78"/><stop offset="1" stop-color="#FFFFFF" stop-opacity=".46"/></linearGradient>
+    <filter id="lift" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#14151A" flood-opacity=".10"/></filter>
     <style>
-      .heading { font-family: 'Helvetica Neue', 'Arial Black', Helvetica, Arial, sans-serif; font-weight: 900; }
-      .mono    { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, 'Courier New', monospace; font-weight: 700; }
+      text { font-family: Satoshi,'Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif; }
     </style>
   </defs>
-
-  <rect width="1280" height="400" fill="#FFFDF5"/>
-  <rect width="1280" height="400" fill="url(#grid)"/>
-
-  <rect x="0" y="0" width="1280" height="36" fill="#CCFF00"/>
-  <line x1="0" y1="36" x2="1280" y2="36" stroke="#1A1A1A" stroke-width="3"/>
-  <text class="mono" x="640" y="24" text-anchor="middle" font-size="12" fill="#1A1A1A" letter-spacing="6">NEXT.JS · TYPESCRIPT · SUPABASE · PLAYWRIGHT · GEMINI · GOOGLE PLACES · RECHARTS</text>
-
-  <text class="mono" x="60" y="100" font-size="13" fill="#1A1A1A" letter-spacing="6">AI LEAD-GEN ENGINE / FOR FREELANCERS / OPEN SOURCE</text>
-
-  <text class="heading" x="60" y="250" font-size="120" fill="#1A1A1A" letter-spacing="-4" textLength="950" lengthAdjust="spacingAndGlyphs">LEADSNIPER<tspan fill="#CCFF00">.</tspan></text>
-
-  <text class="mono" x="60" y="310" font-size="14" fill="#1A1A1A" letter-spacing="4">/// PLACES → CRAWL → SCORE → DRAFT → DASHBOARD ///</text>
-
-  <rect x="1080" y="80" width="140" height="140" fill="#CCFF00" stroke="#1A1A1A" stroke-width="6"/>
-  <text class="mono" x="1150" y="138" text-anchor="middle" font-size="13" fill="#1A1A1A" letter-spacing="2">23</text>
-  <text class="mono" x="1150" y="158" text-anchor="middle" font-size="13" fill="#1A1A1A" letter-spacing="2">SCORING</text>
-  <text class="mono" x="1150" y="178" text-anchor="middle" font-size="13" fill="#1A1A1A" letter-spacing="2">FACTORS</text>
-
-  <text class="mono" x="60" y="378" font-size="12" fill="#1A1A1A" letter-spacing="4">/// REAL-TIME PIPELINE · MULTI-CHANNEL DRAFTS · LOCAL SCRAPER + CLOUD DASH ///</text>
+  <rect width="1280" height="400" rx="28" fill="#EBEAE6"/>
+  <rect width="1280" height="400" rx="28" fill="url(#glow)"/>
+  <rect x="0.5" y="0.5" width="1279" height="399" rx="27.5" fill="none" stroke="#14151A" stroke-opacity=".08"/>
+  <circle cx="84" cy="71" r="4" fill="#2E4FD6"/>
+  <text x="102" y="76" font-size="14" font-weight="600" letter-spacing="1.68" fill="#5D5F65">NEXT.JS · TYPESCRIPT · SUPABASE · PLAYWRIGHT · GEMINI · GOOGLE PLACES · RECHARTS</text>
+  <text x="80" y="134" font-size="15" font-weight="700" letter-spacing="2.40" fill="#2E4FD6">AI LEAD-GEN ENGINE · FOR FREELANCERS · OPEN SOURCE</text>
+  <text x="78" y="262" font-size="100.0" font-weight="700" letter-spacing="-3.50" fill="#14151A">LeadSniper<tspan fill="#2E4FD6">.</tspan></text>
+  <text x="80" y="316" font-size="22" font-weight="500" fill="#2B2D33">Places → crawl → score → draft → dashboard</text>
+  <line x1="80" y1="342" x2="1200" y2="342" stroke="#14151A" stroke-opacity=".10"/>
+  <text x="80" y="372" font-size="13" font-weight="600" letter-spacing="1.56" fill="#5D5F65">REAL-TIME PIPELINE · MULTI-CHANNEL DRAFTS · LOCAL SCRAPER + CLOUD DASH</text>
+  <g filter="url(#lift)">
+    <rect x="996" y="108" width="204" height="159" rx="28" fill="url(#card)" stroke="#FFFFFF" stroke-opacity=".85"/>
+  </g>
+  <circle cx="1098" cy="136" r="4" fill="#2E4FD6"/>
+  <text x="1098" y="180" text-anchor="middle" font-size="16" font-weight="700" letter-spacing="2.2" fill="#14151A">23</text>
+  <text x="1098" y="211" text-anchor="middle" font-size="16" font-weight="700" letter-spacing="2.2" fill="#14151A">SCORING</text>
+  <text x="1098" y="242" text-anchor="middle" font-size="16" font-weight="700" letter-spacing="2.2" fill="#14151A">FACTORS</text>
 </svg>
